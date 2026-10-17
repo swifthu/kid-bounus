@@ -55,7 +55,7 @@ struct HomeView: View {
 
                     LazyVGrid(columns: [.init(.flexible()), .init(.flexible())], spacing: Spacing.s3) {
                         ForEach(products.prefix(4)) { p in
-                            ProductCard(product: p, affordable: bestPoints >= p.cost, bestPoints: bestPoints)
+                            ProductCard(product: p, affordable: bestPoints >= p.cost, bestPoints: bestPoints) {}
                         }
                     }
                     .padding(.horizontal, Spacing.s4)
@@ -82,14 +82,16 @@ struct HomeView: View {
 }
 
 struct SectionHeader: View {
-    let num: String
+    let num: String?
     let label: String
 
     var body: some View {
         HStack {
-            Text(num)
-                .font(.kami(.body, size: 13))
-                .foregroundStyle(Color.kami.accent)
+            if let num, !num.isEmpty {
+                Text(num)
+                    .font(.kami(.body, size: 13))
+                    .foregroundStyle(Color.kami.accent)
+            }
             Text(label)
                 .font(.kami(.body, size: 11))
                 .foregroundStyle(Color.kami.meta)

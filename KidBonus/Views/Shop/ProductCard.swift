@@ -4,9 +4,10 @@ struct ProductCard: View {
     let product: Product
     let affordable: Bool
     let bestPoints: Int
+    let action: () -> Void
 
     var body: some View {
-        Button { /* TODO: open redeem sheet — Task 19 */ } label: {
+        Button(action: action) {
             VStack(alignment: .leading, spacing: Spacing.s2) {
                 ZStack {
                     Rectangle().fill(affordable ? Color.kami.tagBgSoft : Color.kami.tagBgFaint)
