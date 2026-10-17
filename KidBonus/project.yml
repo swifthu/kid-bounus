@@ -15,7 +15,7 @@ targets:
     sources:
       - path: App
       - path: Theme
-      - path: KidBonus/Resources/Fonts
+      - path: Resources/Fonts
         type: folder
         buildPhase: resources
     info:

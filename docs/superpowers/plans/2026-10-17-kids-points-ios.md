@@ -228,7 +228,7 @@ iOS 18+ SwiftUI 原生儿童积分激励 App。
 
 ```bash
 cd /Volumes/CC/Projects/kid-bounus/KidBonus
-xcodebuild -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 16' build
+xcodebuild -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build
 ```
 
 Expected: `** BUILD SUCCEEDED **`
@@ -236,7 +236,7 @@ Expected: `** BUILD SUCCEEDED **`
 - [ ] **Step 8: 验证测试能跑**
 
 ```bash
-xcodebuild test -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 16'
+xcodebuild test -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
 ```
 
 Expected: `Test Suite 'All tests' passed`
@@ -290,7 +290,7 @@ final class KamiTokensTests: XCTestCase {
 
 ```bash
 cd /Volumes/CC/Projects/kid-bounus/KidBonus
-xcodebuild test -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 16' -only-testing:KidBonusTests/KamiTokensTests
+xcodebuild test -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:KidBonusTests/KamiTokensTests
 ```
 
 Expected: 编译失败（无 KamiTokens）。
@@ -383,7 +383,7 @@ extension Font {
 
 ```bash
 cd /Volumes/CC/Projects/kid-bounus/KidBonus
-xcodebuild test -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 16' -only-testing:KidBonusTests/KamiTokensTests
+xcodebuild test -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:KidBonusTests/KamiTokensTests
 ```
 
 Expected: 3 passed.
@@ -459,7 +459,7 @@ Expected: `Created project at KidBonus.xcodeproj`.
 
 ```bash
 xcodebuild -project KidBonus.xcodeproj -scheme KidBonus \
-  -destination 'platform=iOS Simulator,name=iPhone 16' build
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build
 APP=$(find ~/Library/Developer/Xcode/DerivedData -type d -name "KidBonus.app" | head -n1)
 ls "$APP" | grep -i "LXGW"
 ```
@@ -561,7 +561,7 @@ final class Streak {
 
 ```bash
 cd /Volumes/CC/Projects/kid-bounus/KidBonus
-xcodebuild -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 16' build
+xcodebuild -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build
 ```
 
 Expected: BUILD SUCCEEDED.
@@ -671,7 +671,7 @@ final class Product {
 
 ```bash
 cd /Volumes/CC/Projects/kid-bounus/KidBonus
-xcodebuild -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 16' build
+xcodebuild -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build
 ```
 
 Expected: BUILD SUCCEEDED.
@@ -770,7 +770,7 @@ final class Redemption {
 
 ```bash
 cd /Volumes/CC/Projects/kid-bounus/KidBonus
-xcodebuild -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 16' build
+xcodebuild -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build
 ```
 
 Expected: BUILD SUCCEEDED.
@@ -856,7 +856,7 @@ final class SeedDataTests: XCTestCase {
 
 ```bash
 cd /Volumes/CC/Projects/kid-bounus/KidBonus
-xcodebuild test -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 16' -only-testing:KidBonusTests/SeedDataTests
+xcodebuild test -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:KidBonusTests/SeedDataTests
 ```
 
 Expected: 编译失败（无 SeedData）。
@@ -955,7 +955,7 @@ struct KidBonusApp: App {
 
 ```bash
 cd /Volumes/CC/Projects/kid-bounus/KidBonus
-xcodebuild test -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 16' -only-testing:KidBonusTests/SeedDataTests
+xcodebuild test -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:KidBonusTests/SeedDataTests
 ```
 
 Expected: 3 passed.
@@ -1025,7 +1025,7 @@ final class PointMathTests: XCTestCase {
 
 ```bash
 cd /Volumes/CC/Projects/kid-bounus/KidBonus
-xcodebuild test -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 16' -only-testing:KidBonusTests/PointMathTests
+xcodebuild test -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:KidBonusTests/PointMathTests
 ```
 
 Expected: 编译失败。
@@ -1055,7 +1055,7 @@ enum PointMath {
 
 ```bash
 cd /Volumes/CC/Projects/kid-bounus/KidBonus
-xcodebuild test -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 16' -only-testing:KidBonusTests/PointMathTests
+xcodebuild test -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:KidBonusTests/PointMathTests
 ```
 
 Expected: 2 passed.
@@ -1156,7 +1156,7 @@ final class StreakEngineTests: XCTestCase {
 
 ```bash
 cd /Volumes/CC/Projects/kid-bounus/KidBonus
-xcodebuild test -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 16' -only-testing:KidBonusTests/StreakEngineTests
+xcodebuild test -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:KidBonusTests/StreakEngineTests
 ```
 
 Expected: 编译失败。
@@ -1222,7 +1222,7 @@ enum StreakEngine {
 
 ```bash
 cd /Volumes/CC/Projects/kid-bounus/KidBonus
-xcodebuild test -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 16' -only-testing:KidBonusTests/StreakEngineTests
+xcodebuild test -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:KidBonusTests/StreakEngineTests
 ```
 
 Expected: 5 passed.
@@ -1308,7 +1308,7 @@ final class TrendBuilderTests: XCTestCase {
 
 ```bash
 cd /Volumes/CC/Projects/kid-bounus/KidBonus
-xcodebuild test -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 16' -only-testing:KidBonusTests/TrendBuilderTests
+xcodebuild test -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:KidBonusTests/TrendBuilderTests
 ```
 
 Expected: 编译失败。
@@ -1355,7 +1355,7 @@ enum TrendBuilder {
 
 ```bash
 cd /Volumes/CC/Projects/kid-bounus/KidBonus
-xcodebuild test -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 16' -only-testing:KidBonusTests/TrendBuilderTests
+xcodebuild test -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:KidBonusTests/TrendBuilderTests
 ```
 
 Expected: 3 passed.
@@ -1483,7 +1483,7 @@ enum RecordStore {
 
 ```bash
 cd /Volumes/CC/Projects/kid-bounus/KidBonus
-xcodebuild -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 16' build
+xcodebuild -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build
 ```
 
 Expected: BUILD SUCCEEDED.
@@ -1645,7 +1645,7 @@ struct KamiButton: View {
 
 ```bash
 cd /Volumes/CC/Projects/kid-bounus/KidBonus
-xcodebuild -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 16' build
+xcodebuild -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build
 ```
 
 Expected: BUILD SUCCEEDED.
@@ -1739,7 +1739,7 @@ struct KidTabs: View {
 
 ```bash
 cd /Volumes/CC/Projects/kid-bounus/KidBonus
-xcodebuild -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 16' build
+xcodebuild -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build
 cd /Volumes/CC/Projects/kid-bounus
 git add KidBonus/Views/Components/KidTabs.swift
 git commit -m "feat(views): add KidTabs segmented selector"
@@ -1888,7 +1888,7 @@ struct ToastBanner: View {
 
 ```bash
 cd /Volumes/CC/Projects/kid-bounus/KidBonus
-xcodebuild -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 16' build
+xcodebuild -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build
 cd /Volumes/CC/Projects/kid-bounus
 git add KidBonus/Views/Components
 git commit -m "feat(views): add SheetScaffold and ToastCenter"
@@ -1973,7 +1973,7 @@ struct HomeView: View { var body: some View { Text("Home").font(.kami()) } }
 
 ```bash
 cd /Volumes/CC/Projects/kid-bounus/KidBonus
-xcodebuild -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 16' build
+xcodebuild -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build
 ```
 
 Expected: BUILD SUCCEEDED.
@@ -2220,7 +2220,7 @@ struct ProductCard: View {
 
 ```bash
 cd /Volumes/CC/Projects/kid-bounus/KidBonus
-xcodebuild -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 16' build
+xcodebuild -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build
 ```
 
 Expected: BUILD SUCCEEDED.
@@ -2229,7 +2229,7 @@ Expected: BUILD SUCCEEDED.
 
 ```bash
 xcrun simctl boot 'iPhone 16' 2>/dev/null
-xcodebuild -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 16' build
+xcodebuild -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build
 APP=$(find ~/Library/Developer/Xcode/DerivedData -type d -name "KidBonus.app" | head -n1)
 xcrun simctl install booted "$APP"
 xcrun simctl launch booted com.kidbonus.growingtree
@@ -2407,7 +2407,7 @@ struct QuickView: View {
 
 ```bash
 cd /Volumes/CC/Projects/kid-bounus/KidBonus
-xcodebuild -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 16' build
+xcodebuild -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build
 cd /Volumes/CC/Projects/kid-bounus
 git add KidBonus/Views/Quick
 git commit -m "feat(quick): QuickView with KidTabs and ItemRow"
@@ -2559,7 +2559,7 @@ struct HistoryView: View {
 
 ```bash
 cd /Volumes/CC/Projects/kid-bounus/KidBonus
-xcodebuild -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 16' build
+xcodebuild -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build
 cd /Volumes/CC/Projects/kid-bounus
 git add KidBonus/Views/History/HistoryView.swift
 git commit -m "feat(history): HistoryView with timeline and filter"
@@ -2834,7 +2834,7 @@ struct RedeemConfirmSheet: View {
 
 ```bash
 cd /Volumes/CC/Projects/kid-bounus/KidBonus
-xcodebuild -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 16' build
+xcodebuild -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build
 cd /Volumes/CC/Projects/kid-bounus
 git add KidBonus/Views/Shop KidBonus/Views/Sheets/RedeemConfirmSheet.swift
 git commit -m "feat(shop): ShopView + RedeemConfirmSheet"
@@ -3037,7 +3037,7 @@ struct ContentView: View {
 
 ```bash
 cd /Volumes/CC/Projects/kid-bounus/KidBonus
-xcodebuild -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 16' build
+xcodebuild -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build
 APP=$(find ~/Library/Developer/Xcode/DerivedData -type d -name "KidBonus.app" | head -n1)
 xcrun simctl install booted "$APP"
 xcrun simctl launch booted com.kidbonus.growingtree
@@ -3216,7 +3216,7 @@ struct MeView: View {
 
 ```bash
 cd /Volumes/CC/Projects/kid-bounus/KidBonus
-xcodebuild -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 16' build
+xcodebuild -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build
 cd /Volumes/CC/Projects/kid-bounus
 git add KidBonus/Views/Me/MeView.swift
 git commit -m "feat(me): MeView with rename / add / delete / reset"
@@ -3489,7 +3489,7 @@ struct FlowLayout: Layout {
 
 ```bash
 cd /Volumes/CC/Projects/kid-bounus/KidBonus
-xcodebuild -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 16' build
+xcodebuild -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build
 cd /Volumes/CC/Projects/kid-bounus
 git add KidBonus/Views/Sheets
 git commit -m "feat(sheets): AddItemSheet + ManualRecordSheet with FlowLayout"
@@ -3553,7 +3553,7 @@ ContentView 已经注入，到此结束。
 
 ```bash
 cd /Volumes/CC/Projects/kid-bounus/KidBonus
-xcodebuild -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 16' build
+xcodebuild -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build
 cd /Volumes/CC/Projects/kid-bounus
 git add KidBonus/Views
 git commit -m "feat(content): finalize ContentView with topbar"
@@ -3600,7 +3600,7 @@ iOS 18+ SwiftUI 原生儿童积分激励 App。完整复刻 `design/儿童积分
 
 ## 测试
 ```bash
-xcodebuild test -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 16'
+xcodebuild test -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
 ```
 
 ## 项目结构
@@ -3630,7 +3630,7 @@ git commit -m "docs: comprehensive README"
 
 ```bash
 cd /Volumes/CC/Projects/kid-bounus/KidBonus
-xcodebuild test -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 16'
+xcodebuild test -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
 ```
 
 Expected: 所有测试通过。
