@@ -4,27 +4,17 @@ import SwiftData
 @Model
 final class PointItem {
     @Attribute(.unique) var id: UUID
-    var title: String
-    var pointCost: Int
     var kind: Kind
-    var isActive: Bool
-    var iconName: String
+    var title: String
+    var delta: Int
+    var iconName: String?
     var desc: String
 
-    init(
-        id: UUID = UUID(),
-        title: String,
-        pointCost: Int,
-        kind: Kind,
-        isActive: Bool = true,
-        iconName: String = "",
-        desc: String = ""
-    ) {
+    init(id: UUID = UUID(), kind: Kind, title: String, delta: Int, iconName: String? = nil, desc: String) {
         self.id = id
-        self.title = title
-        self.pointCost = pointCost
         self.kind = kind
-        self.isActive = isActive
+        self.title = title
+        self.delta = delta
         self.iconName = iconName
         self.desc = desc
     }
