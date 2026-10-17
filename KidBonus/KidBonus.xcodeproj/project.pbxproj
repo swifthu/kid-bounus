@@ -7,14 +7,18 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1A65C79C34F6E933DA1CBFEB /* StreakEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A83468782723237C274665 /* StreakEngineTests.swift */; };
 		2827674EE23A1C5FE4DEF06F /* KidBonusApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E7A620B15EC3D169EC954B /* KidBonusApp.swift */; };
 		28B4354A03B71B5B914FB90F /* KamiTokensTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14950485D6171C404F019CED /* KamiTokensTests.swift */; };
 		385D08CE51799553865ECDAD /* KamiTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43DB1B98BFDE30F6C2DC4E11 /* KamiTokens.swift */; };
+		3ED170E9D68D973829C40304 /* TrendBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECBF686E585B594CD8CA726B /* TrendBuilderTests.swift */; };
 		3F77DEE3440FFCE8E831361C /* KidBonusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD305F613142A92165530930 /* KidBonusTests.swift */; };
 		42A9F41BCE68AADB2B682386 /* KidModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5EFFCCF3C9FB13CB1FE264C /* KidModels.swift */; };
+		4E5A5990ABE7B37DF7526352 /* StreakEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2820FCF04DA0C365619F8B0F /* StreakEngine.swift */; };
 		5375C50BB88E196D3BBEED6A /* SeedDataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9DF27C0DDFB6823A224301F /* SeedDataTests.swift */; };
 		56651F8A557EE458558081BF /* HistoryRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B4BE0A72072816B584F9FF8 /* HistoryRecord.swift */; };
 		57DF74AE3D951E25A120BF52 /* Kid.swift in Sources */ = {isa = PBXBuildFile; fileRef = B253CC3BF0D89DAAE52E57C7 /* Kid.swift */; };
+		61CD8F9F024B9AF30D4B5E34 /* TrendBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DCA6BDF03597574A01BAF2D /* TrendBuilder.swift */; };
 		845B91B17CAA518C8C2E29B0 /* Fonts in Resources */ = {isa = PBXBuildFile; fileRef = 580455D346B4EDF283EB3022 /* Fonts */; };
 		981642E59794837A933E61F2 /* Font+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 444E16D39197E19A75E0F35F /* Font+.swift */; };
 		AEA8C137B894F1CF6E7CCFE2 /* PointItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C972477DD86590F6B26AC86 /* PointItem.swift */; };
@@ -38,8 +42,11 @@
 /* Begin PBXFileReference section */
 		084712B40919DDC75EA21D04 /* PointMath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PointMath.swift; sourceTree = "<group>"; };
 		14950485D6171C404F019CED /* KamiTokensTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KamiTokensTests.swift; sourceTree = "<group>"; };
+		16A83468782723237C274665 /* StreakEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreakEngineTests.swift; sourceTree = "<group>"; };
+		2820FCF04DA0C365619F8B0F /* StreakEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreakEngine.swift; sourceTree = "<group>"; };
 		43DB1B98BFDE30F6C2DC4E11 /* KamiTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KamiTokens.swift; sourceTree = "<group>"; };
 		444E16D39197E19A75E0F35F /* Font+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Font+.swift"; sourceTree = "<group>"; };
+		4DCA6BDF03597574A01BAF2D /* TrendBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrendBuilder.swift; sourceTree = "<group>"; };
 		580455D346B4EDF283EB3022 /* Fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Fonts; path = Resources/Fonts; sourceTree = SOURCE_ROOT; };
 		586D7FF4B41B02901059390E /* SeedData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeedData.swift; sourceTree = "<group>"; };
 		589E79E1CCD9FDE173F44E24 /* PointMathTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PointMathTests.swift; sourceTree = "<group>"; };
@@ -52,6 +59,7 @@
 		D4E7A620B15EC3D169EC954B /* KidBonusApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KidBonusApp.swift; sourceTree = "<group>"; };
 		DD305F613142A92165530930 /* KidBonusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KidBonusTests.swift; sourceTree = "<group>"; };
 		E9DF27C0DDFB6823A224301F /* SeedDataTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeedDataTests.swift; sourceTree = "<group>"; };
+		ECBF686E585B594CD8CA726B /* TrendBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrendBuilderTests.swift; sourceTree = "<group>"; };
 		EF048548B9925BA1F39E7855 /* KidBonus.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = KidBonus.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F2C0F9EDE66985A2C46CDD87 /* Redemption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Redemption.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -64,6 +72,8 @@
 				DD305F613142A92165530930 /* KidBonusTests.swift */,
 				589E79E1CCD9FDE173F44E24 /* PointMathTests.swift */,
 				E9DF27C0DDFB6823A224301F /* SeedDataTests.swift */,
+				16A83468782723237C274665 /* StreakEngineTests.swift */,
+				ECBF686E585B594CD8CA726B /* TrendBuilderTests.swift */,
 			);
 			name = KidBonusTests;
 			path = ../KidBonusTests;
@@ -104,6 +114,8 @@
 			children = (
 				084712B40919DDC75EA21D04 /* PointMath.swift */,
 				586D7FF4B41B02901059390E /* SeedData.swift */,
+				2820FCF04DA0C365619F8B0F /* StreakEngine.swift */,
+				4DCA6BDF03597574A01BAF2D /* TrendBuilder.swift */,
 			);
 			path = Store;
 			sourceTree = "<group>";
@@ -227,6 +239,8 @@
 				BF97A8D1A92D0532C7552CAD /* Product.swift in Sources */,
 				C58C21065D4310AB67EA9792 /* Redemption.swift in Sources */,
 				F5ED564808A003CB3CA5F270 /* SeedData.swift in Sources */,
+				4E5A5990ABE7B37DF7526352 /* StreakEngine.swift in Sources */,
+				61CD8F9F024B9AF30D4B5E34 /* TrendBuilder.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -238,6 +252,8 @@
 				3F77DEE3440FFCE8E831361C /* KidBonusTests.swift in Sources */,
 				E2820C9F6B397C7BC9B11854 /* PointMathTests.swift in Sources */,
 				5375C50BB88E196D3BBEED6A /* SeedDataTests.swift in Sources */,
+				1A65C79C34F6E933DA1CBFEB /* StreakEngineTests.swift in Sources */,
+				3ED170E9D68D973829C40304 /* TrendBuilderTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
