@@ -16,6 +16,7 @@ targets:
       - path: App
       - path: Models
       - path: Theme
+      - path: Store
       - path: Resources/Fonts
         type: folder
         buildPhase: resources

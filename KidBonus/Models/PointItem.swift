@@ -6,14 +6,26 @@ final class PointItem {
     @Attribute(.unique) var id: UUID
     var title: String
     var pointCost: Int
-    var category: ProductCategory
+    var kind: Kind
     var isActive: Bool
+    var iconName: String
+    var desc: String
 
-    init(id: UUID = UUID(), title: String, pointCost: Int, category: ProductCategory, isActive: Bool = true) {
+    init(
+        id: UUID = UUID(),
+        title: String,
+        pointCost: Int,
+        kind: Kind,
+        isActive: Bool = true,
+        iconName: String = "",
+        desc: String = ""
+    ) {
         self.id = id
         self.title = title
         self.pointCost = pointCost
-        self.category = category
+        self.kind = kind
         self.isActive = isActive
+        self.iconName = iconName
+        self.desc = desc
     }
 }
