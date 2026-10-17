@@ -5,6 +5,7 @@ struct HomeView: View {
     @Query private var kids: [Kid]
     @Query(sort: \Product.cost, order: .reverse) private var products: [Product]
     @Environment(\.modelContext) private var ctx
+    @Environment(ToastCenter.self) private var toast
 
     var body: some View {
         NavigationStack {
@@ -31,7 +32,7 @@ struct HomeView: View {
                                 streak: streak(for: kid),
                                 bonusActive: streak(for: kid) >= 7
                             ) {
-                                // Navigate to QuickView — tab-switch layer; handled in Task 17+
+                                toast.show(.info, title: "切换到「加减」tab")
                             }
                         }
                     }
@@ -42,10 +43,10 @@ struct HomeView: View {
 
                     HStack(spacing: Spacing.s2) {
                         KamiButton("加分", systemImage: "plus", style: .primary) {
-                            // Jump to Quick add flow — Task 17+
+                            toast.show(.info, title: "切换到「加减」tab")
                         }
                         KamiButton("扣分", systemImage: "minus", style: .secondary) {
-                            // Jump to Quick subtract flow — Task 17+
+                            toast.show(.info, title: "切换到「加减」tab")
                         }
                     }
                     .padding(.horizontal, Spacing.s4)
@@ -78,23 +79,5 @@ struct HomeView: View {
         let f = DateFormatter(); f.locale = Locale(identifier: "zh_CN")
         f.dateFormat = "M月d日 EEEE"
         return f.string(from: .now)
-    }
-}
-
-struct SectionHeader: View {
-    let num: String?
-    let label: String
-
-    var body: some View {
-        HStack {
-            if let num, !num.isEmpty {
-                Text(num)
-                    .font(.kami(.body, size: 13))
-                    .foregroundStyle(Color.kami.accent)
-            }
-            Text(label)
-                .font(.kami(.body, size: 11))
-                .foregroundStyle(Color.kami.meta)
-        }
     }
 }

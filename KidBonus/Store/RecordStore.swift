@@ -9,6 +9,7 @@ enum RecordStore {
     }
 
     /// 写一条 history（积分项）。加分时自动触发 streak + bonus。
+    @MainActor
     static func recordItem(_ item: PointItem, on kid: Kid, ctx: ModelContext) -> WriteOutcome {
         ctx.insert(HistoryRecord(
             kid: kid,
@@ -43,6 +44,7 @@ enum RecordStore {
     }
 
     /// 写一条 freeform history。
+    @MainActor
     static func recordFreeform(title: String, delta: Int, on kid: Kid,
                                ctx: ModelContext) -> WriteOutcome {
         ctx.insert(HistoryRecord(

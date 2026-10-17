@@ -2,35 +2,36 @@ import XCTest
 import SwiftData
 @testable import KidBonus
 
+@MainActor
 final class PointMathTests: XCTestCase {
-    @MainActor
-    private func makeCtx() throws -> (ModelContext, Kid) {
+    private func makeCtx() throws -> ModelContext {
         let schema = Schema([Kid.self, PointItem.self, Product.self,
                              HistoryRecord.self, Redemption.self, Streak.self])
         let cfg = ModelConfiguration(isStoredInMemoryOnly: true)
         let container = try ModelContainer(for: schema, configurations: cfg)
-        let ctx = container.mainContext
-        SeedData.installIfEmpty(ctx: ctx)
-        let kid = try ctx.fetch(FetchDescriptor<Kid>()).first!
-        return (ctx, kid)
+        return container.mainContext
     }
 
-    @MainActor
     func testKidPointsSumOfHistoryMinusRedemptions() throws {
-        let (ctx, kid) = try makeCtx()
-        ctx.insert(HistoryRecord(kid: kid, title: "完成作业", delta: 5, sourceKind: .preset))
-        ctx.insert(HistoryRecord(kid: kid, title: "忘带作业", delta: -5, sourceKind: .preset))
-        ctx.insert(Redemption(kid: kid, productName: "贴纸", cost: 25))
+        let ctx = try makeCtx()
+        let kid = Kid(name: "TestKid", age: 8, colorHex: "#FF0000")
+        ctx.insert(kid)
+        let h1 = HistoryRecord(kid: kid, title: "完成作业", delta: 5, sourceKind: .preset)
+        let h2 = HistoryRecord(kid: kid, title: "忘带作业", delta: -5, sourceKind: .preset)
+        let r = Redemption(kid: kid, productName: "贴纸", cost: 25)
+        ctx.insert(h1); ctx.insert(h2); ctx.insert(r)
         try ctx.save()
-        XCTAssertEqual(PointMath.kidPoints(kid), -25)
+        XCTAssertEqual(PointMath.kidPoints([h1, h2], [r]), -25)
     }
 
-    @MainActor
     func testTodayDeltaCountsOnlyTodayRecords() throws {
-        let (ctx, kid) = try makeCtx()
-        ctx.insert(HistoryRecord(kid: kid, title: "t1", delta: 3, sourceKind: .preset))
-        ctx.insert(HistoryRecord(kid: kid, title: "t2", delta: -2, sourceKind: .preset))
+        let ctx = try makeCtx()
+        let kid = Kid(name: "TestKid", age: 8, colorHex: "#FF0000")
+        ctx.insert(kid)
+        let h1 = HistoryRecord(kid: kid, title: "t1", delta: 3, sourceKind: .preset)
+        let h2 = HistoryRecord(kid: kid, title: "t2", delta: -2, sourceKind: .preset)
+        ctx.insert(h1); ctx.insert(h2)
         try ctx.save()
-        XCTAssertEqual(PointMath.todayDelta(kid), 1)
+        XCTAssertEqual(PointMath.todayDelta([h1, h2]), 1)
     }
 }

@@ -2,8 +2,8 @@ import XCTest
 import SwiftData
 @testable import KidBonus
 
+@MainActor
 final class RecordStoreTests: XCTestCase {
-    @MainActor
     private func makeCtx() throws -> ModelContext {
         let schema = Schema([Kid.self, PointItem.self, Product.self,
                              HistoryRecord.self, Redemption.self, Streak.self])
@@ -12,7 +12,6 @@ final class RecordStoreTests: XCTestCase {
         return container.mainContext
     }
 
-    @MainActor
     func testRecordItemAddsHistoryAndRecomputesPoints() throws {
         let ctx = try makeCtx()
         let kid = Kid(name: "TestKid", age: 8, colorHex: "#FF0000")
@@ -28,7 +27,6 @@ final class RecordStoreTests: XCTestCase {
         XCTAssertEqual(outcome.streakBonus, 0)
     }
 
-    @MainActor
     func testRedeemRefusesWhenInsufficient() throws {
         let ctx = try makeCtx()
         let kid = Kid(name: "TestKid", age: 8, colorHex: "#FF0000")

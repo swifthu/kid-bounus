@@ -17,9 +17,9 @@ targets:
       - path: Models
       - path: Theme
       - path: Store
-      - path: Resources/Fonts
-        type: folder
-        buildPhase: resources
+      - path: Resources/Fonts/LXGWWenKai-Regular.ttf
+      - path: Resources/Fonts/LXGWWenKai-Light.ttf
+      - path: Resources/Fonts/OFL.txt
       - path: Views
     info:
       path: Info.plist
@@ -58,5 +58,7 @@ schemes:
       config: Debug
     test:
       config: Debug
+      environmentVariables:
+        DISABLE_SWIFTUI_IN_TESTS: "1"
       targets:
         - KidBonusTests

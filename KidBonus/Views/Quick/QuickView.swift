@@ -1,18 +1,6 @@
 import SwiftUI
 import SwiftData
 
-private struct QuickSectionHeader: View {
-    let num: String?
-    let label: String
-
-    var body: some View {
-        HStack(spacing: 8) {
-            if let n = num { Text(n).font(.kami(.body, size: 13)).foregroundStyle(Color.kami.accent) }
-            Text(label).font(.kami(.body, size: 11)).foregroundStyle(Color.kami.meta)
-        }
-    }
-}
-
 struct QuickView: View {
     @Query private var kids: [Kid]
     @Query private var allItems: [PointItem]
@@ -33,7 +21,7 @@ struct QuickView: View {
                     }
                     .padding(.horizontal, Spacing.s4)
 
-                    QuickSectionHeader(num: nil, label: "选一个孩子")
+                    SectionHeader(num: nil, label: "选一个孩子")
                     Group {
                         if !kids.isEmpty {
                             KidTabs(kids: kids, selected: Binding(
@@ -44,7 +32,7 @@ struct QuickView: View {
                     }
                     .padding(.horizontal, Spacing.s4)
 
-                    QuickSectionHeader(num: nil, label: "加分项")
+                    SectionHeader(num: nil, label: "加分项")
                     VStack(spacing: Spacing.s3) {
                         ForEach(allItems.filter { $0.kind == .add }) { item in
                             ItemRow(item: item) { addOrDeduct(item) }
@@ -52,7 +40,7 @@ struct QuickView: View {
                     }
                     .padding(.horizontal, Spacing.s4)
 
-                    QuickSectionHeader(num: nil, label: "扣分项")
+                    SectionHeader(num: nil, label: "扣分项")
                     VStack(spacing: Spacing.s3) {
                         ForEach(allItems.filter { $0.kind == .deduct }) { item in
                             ItemRow(item: item) { addOrDeduct(item) }
@@ -60,7 +48,7 @@ struct QuickView: View {
                     }
                     .padding(.horizontal, Spacing.s4)
 
-                    QuickSectionHeader(num: nil, label: "自定义加减")
+                    SectionHeader(num: nil, label: "自定义加减")
                     Button { showManual = true } label: {
                         HStack(spacing: Spacing.s3) {
                             Image(systemName: "pencil")

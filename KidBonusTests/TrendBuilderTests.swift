@@ -2,20 +2,20 @@ import XCTest
 import SwiftData
 @testable import KidBonus
 
+@MainActor
 final class TrendBuilderTests: XCTestCase {
-    @MainActor
     private func makeCtx() throws -> (ModelContext, Kid) {
         let schema = Schema([Kid.self, PointItem.self, Product.self,
                              HistoryRecord.self, Redemption.self, Streak.self])
         let cfg = ModelConfiguration(isStoredInMemoryOnly: true)
         let container = try ModelContainer(for: schema, configurations: cfg)
         let ctx = container.mainContext
-        SeedData.installIfEmpty(ctx: ctx)
-        let kid = try ctx.fetch(FetchDescriptor<Kid>()).first!
+        let kid = Kid(name: "TestKid", age: 8, colorHex: "#FF0000")
+        ctx.insert(kid)
+        try ctx.save()
         return (ctx, kid)
     }
 
-    @MainActor
     func testTrendReturns14BucketsAllignedFromToday() throws {
         let (_, kid) = try makeCtx()
         let buckets = TrendBuilder.trend(kid, days: 14)
@@ -23,23 +23,22 @@ final class TrendBuilderTests: XCTestCase {
         XCTAssertEqual(buckets.last?.dateKey, DateKey.today)
     }
 
-    @MainActor
     func testTrendIncludesRedemptionAsNegative() throws {
         let (ctx, kid) = try makeCtx()
-        ctx.insert(HistoryRecord(kid: kid, title: "t", delta: 5,
-                                 sourceKind: .preset))
-        ctx.insert(Redemption(kid: kid, productName: "x", cost: 25))
+        let h = HistoryRecord(kid: kid, title: "t", delta: 5, sourceKind: .preset)
+        let r = Redemption(kid: kid, productName: "x", cost: 25)
+        ctx.insert(h); ctx.insert(r)
         try ctx.save()
         let buckets = TrendBuilder.trend(kid, days: 14)
         let today = buckets.first { $0.dateKey == DateKey.today }
         XCTAssertEqual(today?.value, -20)
     }
 
-    @MainActor
     func testDistributionAggregatesByTitle() throws {
         let (ctx, kid) = try makeCtx()
-        ctx.insert(HistoryRecord(kid: kid, title: "x", delta: 5, sourceKind: .preset))
-        ctx.insert(HistoryRecord(kid: kid, title: "x", delta: -2, sourceKind: .preset))
+        let h1 = HistoryRecord(kid: kid, title: "x", delta: 5, sourceKind: .preset)
+        let h2 = HistoryRecord(kid: kid, title: "x", delta: -2, sourceKind: .preset)
+        ctx.insert(h1); ctx.insert(h2)
         try ctx.save()
         let dist = TrendBuilder.distribution(kid)
         let row = dist.first { $0.title == "x" }

@@ -14,6 +14,7 @@ enum StreakEngine {
     ///   否则         → count = 1
     ///   count == 7  → bonus = 20
     ///   count == 30 → bonus += 100
+    @MainActor
     static func bump(kidID: UUID, ctx: ModelContext) -> StreakUpdate {
         let today = DateKey.today
         let streak = currentStreak(kidID: kidID, ctx: ctx)
@@ -43,6 +44,7 @@ enum StreakEngine {
         return StreakUpdate(count: nextCount, bonus: bonus)
     }
 
+    @MainActor
     static func currentStreak(kidID: UUID, ctx: ModelContext) -> Streak? {
         let pred = #Predicate<Streak> { $0.kidID == kidID }
         return try? ctx.fetch(FetchDescriptor<Streak>(predicate: pred)).first
