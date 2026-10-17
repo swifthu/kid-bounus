@@ -11,6 +11,7 @@
 		28B4354A03B71B5B914FB90F /* KamiTokensTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14950485D6171C404F019CED /* KamiTokensTests.swift */; };
 		385D08CE51799553865ECDAD /* KamiTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43DB1B98BFDE30F6C2DC4E11 /* KamiTokens.swift */; };
 		3F77DEE3440FFCE8E831361C /* KidBonusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD305F613142A92165530930 /* KidBonusTests.swift */; };
+		42A9F41BCE68AADB2B682386 /* KidModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5EFFCCF3C9FB13CB1FE264C /* KidModels.swift */; };
 		845B91B17CAA518C8C2E29B0 /* Fonts in Resources */ = {isa = PBXBuildFile; fileRef = 580455D346B4EDF283EB3022 /* Fonts */; };
 		981642E59794837A933E61F2 /* Font+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 444E16D39197E19A75E0F35F /* Font+.swift */; };
 /* End PBXBuildFile section */
@@ -31,6 +32,7 @@
 		444E16D39197E19A75E0F35F /* Font+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Font+.swift"; sourceTree = "<group>"; };
 		580455D346B4EDF283EB3022 /* Fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Fonts; path = Resources/Fonts; sourceTree = SOURCE_ROOT; };
 		8BF1AFD9F27F0F69B3101254 /* KidBonusTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = KidBonusTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A5EFFCCF3C9FB13CB1FE264C /* KidModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KidModels.swift; sourceTree = "<group>"; };
 		D4E7A620B15EC3D169EC954B /* KidBonusApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KidBonusApp.swift; sourceTree = "<group>"; };
 		DD305F613142A92165530930 /* KidBonusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KidBonusTests.swift; sourceTree = "<group>"; };
 		EF048548B9925BA1F39E7855 /* KidBonus.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = KidBonus.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -56,6 +58,14 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		9588EFD1513982ABAF797BEF /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				A5EFFCCF3C9FB13CB1FE264C /* KidModels.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
 		9F9EE13E571094C7498FE949 /* App */ = {
 			isa = PBXGroup;
 			children = (
@@ -70,6 +80,7 @@
 				580455D346B4EDF283EB3022 /* Fonts */,
 				9F9EE13E571094C7498FE949 /* App */,
 				0FFD13ED7C83E928D3707005 /* KidBonusTests */,
+				9588EFD1513982ABAF797BEF /* Models */,
 				F0F31491BC11A5882DF0E373 /* Theme */,
 				3FAB026DE882E96B6F922E35 /* Products */,
 			);
@@ -173,6 +184,7 @@
 				981642E59794837A933E61F2 /* Font+.swift in Sources */,
 				385D08CE51799553865ECDAD /* KamiTokens.swift in Sources */,
 				2827674EE23A1C5FE4DEF06F /* KidBonusApp.swift in Sources */,
+				42A9F41BCE68AADB2B682386 /* KidModels.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
