@@ -1,7 +1,91 @@
 import SwiftUI
+import SwiftData
 
 struct StatsView: View {
-    var body: some View { Text("Stats").font(.system(size: 17)) }
-}
+    @Query private var kids: [Kid]
+    @AppStorage("currentKidID") private var currentKidID: String = ""
 
-#Preview { StatsView() }
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: Spacing.s5) {
+                    VStack(alignment: .leading) {
+                        Text("统计").font(.kami(.body, size: 28))
+                        Text("近 14 天积分变化趋势。")
+                            .font(.kami(.body, size: 14))
+                            .foregroundStyle(Color.kami.muted)
+                    }
+                    .padding(.horizontal, Spacing.s4)
+
+                    KidTabs(kids: kids, selected: Binding(
+                        get: { UUID(uuidString: currentKidID) ?? kids[0].id },
+                        set: { currentKidID = $0.uuidString }
+                    ))
+                    .padding(.horizontal, Spacing.s4)
+
+                    if let kid = currentKid {
+                        VStack(alignment: .leading, spacing: Spacing.s4) {
+                            HStack(spacing: Spacing.s3) {
+                                statBlock(value: "\(PointMath.kidPoints(kid))", label: "当前积分")
+                                statBlock(value: "\(positiveCount(kid))", label: "加分次数")
+                                statBlock(value: "\(negativeCount(kid))", label: "扣分次数")
+                            }
+                            .padding(Spacing.s4)
+                            .background(Color.kami.surface)
+                            .clipShape(RoundedRectangle(cornerRadius: Radius.md))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: Radius.md)
+                                    .stroke(Color.kami.border, lineWidth: 1)
+                            )
+
+                            Sparkline(buckets: TrendBuilder.trend(kid))
+
+                            SectionHeader(num: nil, label: "按项目分布")
+                            VStack(spacing: Spacing.s2) {
+                                ForEach(TrendBuilder.distribution(kid).prefix(8), id: \.title) { r in
+                                    HStack {
+                                        Text(r.title).font(.kami(.body, size: 14))
+                                        Spacer()
+                                        Text("+\(r.add) · −\(r.deduct)")
+                                            .font(.kami(.body, size: 12))
+                                            .foregroundStyle(Color.kami.meta)
+                                    }
+                                    .padding(Spacing.s3)
+                                    .background(Color.kami.surface)
+                                    .clipShape(RoundedRectangle(cornerRadius: Radius.md))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: Radius.md)
+                                            .stroke(Color.kami.border, lineWidth: 1)
+                                    )
+                                }
+                            }
+                        }
+                        .padding(.horizontal, Spacing.s4)
+                    }
+                }
+                .padding(.vertical, Spacing.s4)
+            }
+            .background(Color.kami.bg)
+        }
+    }
+
+    private var currentKid: Kid? {
+        kids.first { $0.id.uuidString == currentKidID } ?? kids.first
+    }
+
+    private func positiveCount(_ kid: Kid) -> Int {
+        kid.history.filter { $0.delta > 0 }.count
+    }
+
+    private func negativeCount(_ kid: Kid) -> Int {
+        kid.history.filter { $0.delta < 0 }.count
+    }
+
+    private func statBlock(value: String, label: String) -> some View {
+        VStack(alignment: .leading) {
+            Text(value).font(.kami(.body, size: 22)).foregroundStyle(Color.kami.fg)
+            Text(label).font(.kami(.body, size: 11)).foregroundStyle(Color.kami.meta)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
