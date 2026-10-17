@@ -1,0 +1,55 @@
+name: KidBonus
+options:
+  bundleIdPrefix: com.kidbonus
+  deploymentTarget:
+    iOS: "18.0"
+settings:
+  SWIFT_VERSION: "6.0"
+  IPHONEOS_DEPLOYMENT_TARGET: "18.0"
+  MARKETING_VERSION: "1.0"
+  CURRENT_PROJECT_VERSION: "1"
+targets:
+  KidBonus:
+    type: application
+    platform: iOS
+    sources:
+      - path: App
+    info:
+      path: Info.plist
+      properties:
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        UIAppFonts:
+          - LXGWWenKai-Regular.ttf
+          - LXGWWenKai-Light.ttf
+        CFBundleDisplayName: 成长树
+        UIRequiresFullScreen: true
+        UIStatusBarStyle: UIStatusBarStyleDefault
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.kidbonus.growingtree
+      INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: YES
+      INFOPLIST_KEY_UILaunchScreen_Generation: YES
+      INFOPLIST_KEY_UISupportedInterfaceOrientations: "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
+  KidBonusTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: ../KidBonusTests
+    dependencies:
+      - target: KidBonus
+    settings:
+      GENERATE_INFOPLIST_FILE: YES
+      INFOPLIST_KEY_UILaunchScreen_Generation: YES
+schemes:
+  KidBonus:
+    build:
+      targets:
+        KidBonus: all
+        KidBonusTests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - KidBonusTests
