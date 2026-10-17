@@ -20,7 +20,7 @@ struct ContentView: View {
     var body: some View {
         Text("KidBonus")
             .font(.system(size: 28, weight: .medium))
-            .task {
+            .onAppear {
                 SeedData.installIfEmpty(ctx: ctx)
             }
     }
