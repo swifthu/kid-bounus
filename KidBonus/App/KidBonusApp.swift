@@ -13,15 +13,3 @@ struct KidBonusApp: App {
         ])
     }
 }
-
-struct ContentView: View {
-    @Environment(\.modelContext) private var ctx
-
-    var body: some View {
-        Text("KidBonus")
-            .font(.system(size: 28, weight: .medium))
-            .onAppear {
-                SeedData.installIfEmpty(ctx: ctx)
-            }
-    }
-}
