@@ -48,12 +48,23 @@ targets:
     settings:
       GENERATE_INFOPLIST_FILE: YES
       INFOPLIST_KEY_UILaunchScreen_Generation: YES
+  KidBonusUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: ../KidBonusUITests
+    dependencies:
+      - target: KidBonus
+    settings:
+      GENERATE_INFOPLIST_FILE: YES
+      TEST_TARGET_NAME: KidBonus
 schemes:
   KidBonus:
     build:
       targets:
         KidBonus: all
         KidBonusTests: [test]
+        KidBonusUITests: [test]
     run:
       config: Debug
     test:
@@ -62,3 +73,4 @@ schemes:
         DISABLE_SWIFTUI_IN_TESTS: "1"
       targets:
         - KidBonusTests
+        - KidBonusUITests

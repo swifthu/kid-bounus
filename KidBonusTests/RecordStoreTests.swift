@@ -4,16 +4,16 @@ import SwiftData
 
 @MainActor
 final class RecordStoreTests: XCTestCase {
-    private func makeCtx() throws -> ModelContext {
+    private func makeContainer() throws -> ModelContainer {
         let schema = Schema([Kid.self, PointItem.self, Product.self,
                              HistoryRecord.self, Redemption.self, Streak.self])
         let cfg = ModelConfiguration(isStoredInMemoryOnly: true)
-        let container = try ModelContainer(for: schema, configurations: cfg)
-        return container.mainContext
+        return try ModelContainer(for: schema, configurations: cfg)
     }
 
     func testRecordItemAddsHistoryAndRecomputesPoints() throws {
-        let ctx = try makeCtx()
+        let container = try makeContainer()
+        let ctx = container.mainContext
         let kid = Kid(name: "TestKid", age: 8, colorHex: "#FF0000")
         ctx.insert(kid)
 
@@ -28,7 +28,8 @@ final class RecordStoreTests: XCTestCase {
     }
 
     func testRedeemRefusesWhenInsufficient() throws {
-        let ctx = try makeCtx()
+        let container = try makeContainer()
+        let ctx = container.mainContext
         let kid = Kid(name: "TestKid", age: 8, colorHex: "#FF0000")
         ctx.insert(kid)
 

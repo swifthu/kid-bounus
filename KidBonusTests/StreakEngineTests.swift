@@ -4,12 +4,11 @@ import SwiftData
 
 @MainActor
 final class StreakEngineTests: XCTestCase {
-    private func makeCtx() throws -> ModelContext {
+    private func makeContainer() throws -> ModelContainer {
         let schema = Schema([Kid.self, PointItem.self, Product.self,
                              HistoryRecord.self, Redemption.self, Streak.self])
         let cfg = ModelConfiguration(isStoredInMemoryOnly: true)
-        let container = try ModelContainer(for: schema, configurations: cfg)
-        return container.mainContext
+        return try ModelContainer(for: schema, configurations: cfg)
     }
 
     private func seedKid(ctx: ModelContext) {
@@ -17,7 +16,8 @@ final class StreakEngineTests: XCTestCase {
     }
 
     func testFirstBumpOfDaySetsCountToOne() throws {
-        let ctx = try makeCtx()
+        let container = try makeContainer()
+        let ctx = container.mainContext
         seedKid(ctx: ctx)
         let kids = try ctx.fetch(FetchDescriptor<Kid>())
         let id = kids.first!.id
@@ -27,7 +27,8 @@ final class StreakEngineTests: XCTestCase {
     }
 
     func testSecondBumpSameDayDoesNotIncrement() throws {
-        let ctx = try makeCtx()
+        let container = try makeContainer()
+        let ctx = container.mainContext
         seedKid(ctx: ctx)
         let kids = try ctx.fetch(FetchDescriptor<Kid>())
         let id = kids.first!.id
@@ -38,7 +39,8 @@ final class StreakEngineTests: XCTestCase {
     }
 
     func testBumpAfterBreakResetsCount() throws {
-        let ctx = try makeCtx()
+        let container = try makeContainer()
+        let ctx = container.mainContext
         seedKid(ctx: ctx)
         let kids = try ctx.fetch(FetchDescriptor<Kid>())
         let id = kids.first!.id
@@ -49,7 +51,8 @@ final class StreakEngineTests: XCTestCase {
     }
 
     func testSeventhDayTriggersWeeklyBonus() throws {
-        let ctx = try makeCtx()
+        let container = try makeContainer()
+        let ctx = container.mainContext
         seedKid(ctx: ctx)
         let kids = try ctx.fetch(FetchDescriptor<Kid>())
         let id = kids.first!.id
@@ -62,7 +65,8 @@ final class StreakEngineTests: XCTestCase {
     }
 
     func testThirtiethDayTriggersMonthlyBonus() throws {
-        let ctx = try makeCtx()
+        let container = try makeContainer()
+        let ctx = container.mainContext
         seedKid(ctx: ctx)
         let kids = try ctx.fetch(FetchDescriptor<Kid>())
         let id = kids.first!.id

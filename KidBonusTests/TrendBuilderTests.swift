@@ -4,7 +4,7 @@ import SwiftData
 
 @MainActor
 final class TrendBuilderTests: XCTestCase {
-    private func makeCtx() throws -> (ModelContext, Kid) {
+    private func makeFixture() throws -> (ModelContainer, Kid) {
         let schema = Schema([Kid.self, PointItem.self, Product.self,
                              HistoryRecord.self, Redemption.self, Streak.self])
         let cfg = ModelConfiguration(isStoredInMemoryOnly: true)
@@ -13,18 +13,22 @@ final class TrendBuilderTests: XCTestCase {
         let kid = Kid(name: "TestKid", age: 8, colorHex: "#FF0000")
         ctx.insert(kid)
         try ctx.save()
-        return (ctx, kid)
+        return (container, kid)
     }
 
     func testTrendReturns14BucketsAllignedFromToday() throws {
-        let (_, kid) = try makeCtx()
-        let buckets = TrendBuilder.trend(kid, days: 14)
-        XCTAssertEqual(buckets.count, 14)
-        XCTAssertEqual(buckets.last?.dateKey, DateKey.today)
+        // container 必须保持存活：ModelContext 依赖它背后的 store，容器一旦释放访问即崩溃。
+        let (container, kid) = try makeFixture()
+        withExtendedLifetime(container) {
+            let buckets = TrendBuilder.trend(kid, days: 14)
+            XCTAssertEqual(buckets.count, 14)
+            XCTAssertEqual(buckets.last?.dateKey, DateKey.today)
+        }
     }
 
     func testTrendIncludesRedemptionAsNegative() throws {
-        let (ctx, kid) = try makeCtx()
+        let (container, kid) = try makeFixture()
+        let ctx = container.mainContext
         let h = HistoryRecord(kid: kid, title: "t", delta: 5, sourceKind: .preset)
         let r = Redemption(kid: kid, productName: "x", cost: 25)
         ctx.insert(h); ctx.insert(r)
@@ -35,7 +39,8 @@ final class TrendBuilderTests: XCTestCase {
     }
 
     func testDistributionAggregatesByTitle() throws {
-        let (ctx, kid) = try makeCtx()
+        let (container, kid) = try makeFixture()
+        let ctx = container.mainContext
         let h1 = HistoryRecord(kid: kid, title: "x", delta: 5, sourceKind: .preset)
         let h2 = HistoryRecord(kid: kid, title: "x", delta: -2, sourceKind: .preset)
         ctx.insert(h1); ctx.insert(h2)

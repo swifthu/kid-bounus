@@ -4,16 +4,16 @@ import SwiftData
 
 @MainActor
 final class PointMathTests: XCTestCase {
-    private func makeCtx() throws -> ModelContext {
+    private func makeContainer() throws -> ModelContainer {
         let schema = Schema([Kid.self, PointItem.self, Product.self,
                              HistoryRecord.self, Redemption.self, Streak.self])
         let cfg = ModelConfiguration(isStoredInMemoryOnly: true)
-        let container = try ModelContainer(for: schema, configurations: cfg)
-        return container.mainContext
+        return try ModelContainer(for: schema, configurations: cfg)
     }
 
     func testKidPointsSumOfHistoryMinusRedemptions() throws {
-        let ctx = try makeCtx()
+        let container = try makeContainer()
+        let ctx = container.mainContext
         let kid = Kid(name: "TestKid", age: 8, colorHex: "#FF0000")
         ctx.insert(kid)
         let h1 = HistoryRecord(kid: kid, title: "完成作业", delta: 5, sourceKind: .preset)
@@ -25,7 +25,8 @@ final class PointMathTests: XCTestCase {
     }
 
     func testTodayDeltaCountsOnlyTodayRecords() throws {
-        let ctx = try makeCtx()
+        let container = try makeContainer()
+        let ctx = container.mainContext
         let kid = Kid(name: "TestKid", age: 8, colorHex: "#FF0000")
         ctx.insert(kid)
         let h1 = HistoryRecord(kid: kid, title: "t1", delta: 3, sourceKind: .preset)

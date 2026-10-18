@@ -44,6 +44,7 @@ struct KidCard: View {
                         .offset(y: -Spacing.s3)
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
             .padding(Spacing.s4)
             .background(Color.kami.surface)
             .clipShape(RoundedRectangle(cornerRadius: Radius.md))

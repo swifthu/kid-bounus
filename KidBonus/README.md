@@ -12,7 +12,14 @@ iOS 18+ SwiftUI 原生儿童积分激励 App。完整复刻 `design/儿童积分
 - 本地重置
 
 ## 截图
-启动后截屏：`xcrun simctl io booted screenshot home.png`
+页面截图见 `../docs/screenshots/`。重新生成：
+
+```bash
+xcodebuild test -project KidBonus.xcodeproj -scheme KidBonus \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
+  -only-testing:KidBonusUITests
+# 产物在 /tmp/kb_shots/
+```
 
 ## 技术
 - Swift 6 / SwiftUI（iOS 18+）
@@ -29,7 +36,11 @@ iOS 18+ SwiftUI 原生儿童积分激励 App。完整复刻 `design/儿童积分
 
 ## 测试
 ```bash
+# 全部（单元 + UI 截图）
 xcodebuild test -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
+
+# 只跑单元测试
+xcodebuild test -project KidBonus.xcodeproj -scheme KidBonus -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:KidBonusTests
 ```
 
 ## 项目结构

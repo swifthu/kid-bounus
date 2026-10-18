@@ -35,6 +35,20 @@
                ReferencedContainer = "container:KidBonus.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "630A65430A5B5F7671E41E15"
+               BuildableName = "KidBonusUITests.xctest"
+               BlueprintName = "KidBonusUITests"
+               ReferencedContainer = "container:KidBonus.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
@@ -61,6 +75,17 @@
                BlueprintIdentifier = "3A2E32EF1418D4CCDE3FA24F"
                BuildableName = "KidBonusTests.xctest"
                BlueprintName = "KidBonusTests"
+               ReferencedContainer = "container:KidBonus.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "630A65430A5B5F7671E41E15"
+               BuildableName = "KidBonusUITests.xctest"
+               BlueprintName = "KidBonusUITests"
                ReferencedContainer = "container:KidBonus.xcodeproj">
             </BuildableReference>
          </TestableReference>

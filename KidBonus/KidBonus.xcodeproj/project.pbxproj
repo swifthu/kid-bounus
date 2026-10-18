@@ -23,6 +23,7 @@
 		3F77DEE3440FFCE8E831361C /* KidBonusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD305F613142A92165530930 /* KidBonusTests.swift */; };
 		42A9F41BCE68AADB2B682386 /* KidModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5EFFCCF3C9FB13CB1FE264C /* KidModels.swift */; };
 		49B68843099DAABA7F32BA07 /* SheetScaffold.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64C58589DCB69DBD6C0888BC /* SheetScaffold.swift */; };
+		4D3C3A9A977FA04ABE7DE047 /* ScreenshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0CAAAE0E60C1C2157DF0948 /* ScreenshotTests.swift */; };
 		4E5A5990ABE7B37DF7526352 /* StreakEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2820FCF04DA0C365619F8B0F /* StreakEngine.swift */; };
 		5375C50BB88E196D3BBEED6A /* SeedDataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9DF27C0DDFB6823A224301F /* SeedDataTests.swift */; };
 		56651F8A557EE458558081BF /* HistoryRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B4BE0A72072816B584F9FF8 /* HistoryRecord.swift */; };
@@ -56,6 +57,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		7CD87E8785B45CDC69A7ADCB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1497A58829C20631DD5698D5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 37BEBDEFB46226C8FE9B6E3C;
+			remoteInfo = KidBonus;
+		};
 		D9C73EB937F61E3EEDD64CBA /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 1497A58829C20631DD5698D5 /* Project object */;
@@ -72,6 +80,7 @@
 		16A83468782723237C274665 /* StreakEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreakEngineTests.swift; sourceTree = "<group>"; };
 		275DCCA7EDFD6A1078450A7A /* ItemRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemRow.swift; sourceTree = "<group>"; };
 		2820FCF04DA0C365619F8B0F /* StreakEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreakEngine.swift; sourceTree = "<group>"; };
+		29A6390662E87A2A6A0E8A46 /* KidBonusUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = KidBonusUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D9948643F44433DB3800C90 /* ProductCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductCard.swift; sourceTree = "<group>"; };
 		3F1C5F5B52B51DF804FDA70C /* RecordStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordStore.swift; sourceTree = "<group>"; };
 		3FC4D8D9B67D14350EBA3C3D /* RedeemConfirmSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RedeemConfirmSheet.swift; sourceTree = "<group>"; };
@@ -102,6 +111,7 @@
 		C5885B07846CA3F61E782B17 /* KamiButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KamiButton.swift; sourceTree = "<group>"; };
 		CA5B80AAA2D1B7F646A7650D /* KidCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KidCard.swift; sourceTree = "<group>"; };
 		CDB35F3DD627CDC57B1C11DD /* KidTabs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KidTabs.swift; sourceTree = "<group>"; };
+		D0CAAAE0E60C1C2157DF0948 /* ScreenshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotTests.swift; sourceTree = "<group>"; };
 		D2F164FDB0B29B0A551A651B /* StatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsView.swift; sourceTree = "<group>"; };
 		D4E7A620B15EC3D169EC954B /* KidBonusApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KidBonusApp.swift; sourceTree = "<group>"; };
 		D689658277D2D73F89132752 /* Sparkline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sparkline.swift; sourceTree = "<group>"; };
@@ -177,6 +187,7 @@
 			children = (
 				EF048548B9925BA1F39E7855 /* KidBonus.app */,
 				8BF1AFD9F27F0F69B3101254 /* KidBonusTests.xctest */,
+				29A6390662E87A2A6A0E8A46 /* KidBonusUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -267,6 +278,7 @@
 				9F9EE13E571094C7498FE949 /* App */,
 				7C7F4B18E4D2DC916BD7D82D /* Fonts */,
 				0FFD13ED7C83E928D3707005 /* KidBonusTests */,
+				E10CFE4FF6BD8705492D721C /* KidBonusUITests */,
 				9588EFD1513982ABAF797BEF /* Models */,
 				B92489F2A8B3986BE1385D84 /* Store */,
 				F0F31491BC11A5882DF0E373 /* Theme */,
@@ -290,6 +302,15 @@
 				CA5B80AAA2D1B7F646A7650D /* KidCard.swift */,
 			);
 			path = Home;
+			sourceTree = "<group>";
+		};
+		E10CFE4FF6BD8705492D721C /* KidBonusUITests */ = {
+			isa = PBXGroup;
+			children = (
+				D0CAAAE0E60C1C2157DF0948 /* ScreenshotTests.swift */,
+			);
+			name = KidBonusUITests;
+			path = ../KidBonusUITests;
 			sourceTree = "<group>";
 		};
 		F0F31491BC11A5882DF0E373 /* Theme */ = {
@@ -340,6 +361,24 @@
 			productReference = 8BF1AFD9F27F0F69B3101254 /* KidBonusTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		630A65430A5B5F7671E41E15 /* KidBonusUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 86C94E9FB65C8C04FC9A600F /* Build configuration list for PBXNativeTarget "KidBonusUITests" */;
+			buildPhases = (
+				8DED8BE04DF10FE1D770AC18 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F5AE048EFC80F627985B0483 /* PBXTargetDependency */,
+			);
+			name = KidBonusUITests;
+			packageProductDependencies = (
+			);
+			productName = KidBonusUITests;
+			productReference = 29A6390662E87A2A6A0E8A46 /* KidBonusUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -349,6 +388,9 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
+					630A65430A5B5F7671E41E15 = {
+						TestTargetID = 37BEBDEFB46226C8FE9B6E3C;
+					};
 				};
 			};
 			buildConfigurationList = 20A48A34A986B731A0DD2BEE /* Build configuration list for PBXProject "KidBonus" */;
@@ -367,6 +409,7 @@
 			targets = (
 				37BEBDEFB46226C8FE9B6E3C /* KidBonus */,
 				3A2E32EF1418D4CCDE3FA24F /* KidBonusTests */,
+				630A65430A5B5F7671E41E15 /* KidBonusUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -442,6 +485,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		8DED8BE04DF10FE1D770AC18 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4D3C3A9A977FA04ABE7DE047 /* ScreenshotTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -450,9 +501,31 @@
 			target = 37BEBDEFB46226C8FE9B6E3C /* KidBonus */;
 			targetProxy = D9C73EB937F61E3EEDD64CBA /* PBXContainerItemProxy */;
 		};
+		F5AE048EFC80F627985B0483 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 37BEBDEFB46226C8FE9B6E3C /* KidBonus */;
+			targetProxy = 7CD87E8785B45CDC69A7ADCB /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		04431D6613F631716EEFC6E8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.kidbonus.KidBonusUITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = KidBonus;
+			};
+			name = Release;
+		};
 		0A41BD980E1C1DEA0DE92F9B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -585,6 +658,23 @@
 			};
 			name = Release;
 		};
+		9EF4E357F40360B97079509E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.kidbonus.KidBonusUITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = KidBonus;
+			};
+			name = Debug;
+		};
 		A07F195976490F2A1146433C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -667,6 +757,15 @@
 			buildConfigurations = (
 				4A93F8DC34DB4A6A61A8BBCC /* Debug */,
 				7CFD8A4AEC51BA53168CECF1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		86C94E9FB65C8C04FC9A600F /* Build configuration list for PBXNativeTarget "KidBonusUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9EF4E357F40360B97079509E /* Debug */,
+				04431D6613F631716EEFC6E8 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

@@ -22,6 +22,7 @@ struct QuickView: View {
                     .padding(.horizontal, Spacing.s4)
 
                     SectionHeader(num: nil, label: "选一个孩子")
+                        .padding(.horizontal, Spacing.s4)
                     Group {
                         if !kids.isEmpty {
                             KidTabs(kids: kids, selected: Binding(
@@ -33,6 +34,7 @@ struct QuickView: View {
                     .padding(.horizontal, Spacing.s4)
 
                     SectionHeader(num: nil, label: "加分项")
+                        .padding(.horizontal, Spacing.s4)
                     VStack(spacing: Spacing.s3) {
                         ForEach(allItems.filter { $0.kind == .add }) { item in
                             ItemRow(item: item) { addOrDeduct(item) }
@@ -41,6 +43,7 @@ struct QuickView: View {
                     .padding(.horizontal, Spacing.s4)
 
                     SectionHeader(num: nil, label: "扣分项")
+                        .padding(.horizontal, Spacing.s4)
                     VStack(spacing: Spacing.s3) {
                         ForEach(allItems.filter { $0.kind == .deduct }) { item in
                             ItemRow(item: item) { addOrDeduct(item) }
@@ -49,6 +52,7 @@ struct QuickView: View {
                     .padding(.horizontal, Spacing.s4)
 
                     SectionHeader(num: nil, label: "自定义加减")
+                        .padding(.horizontal, Spacing.s4)
                     Button { showManual = true } label: {
                         HStack(spacing: Spacing.s3) {
                             Image(systemName: "pencil")
