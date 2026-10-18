@@ -16,3 +16,6 @@ DerivedData/
 .swiftpm/
 .build/
 Package.resolved
+
+# Claude Code worktrees
+.claude/worktrees/
