@@ -20,7 +20,7 @@ struct RedeemConfirmSheet: View {
             ]
         ) {
             Picker("孩子", selection: Binding(
-                get: { selectedKidID ?? defaultKid },
+                get: { selectedKidID ?? defaultKidID },
                 set: { selectedKidID = $0 }
             )) {
                 ForEach(kids) { k in
@@ -36,13 +36,19 @@ struct RedeemConfirmSheet: View {
         }
     }
 
-    private var defaultKid: UUID? {
-        UUID(uuidString: currentKidID) ?? kids.first?.id
+    /// 必须经 KidPicker 校验：currentKidID 可能是「重置数据」后遗留的旧 UUID，
+    /// 能解析但已不对应任何 Kid。此时直接用 UUID(uuidString:) 会静默失灵。
+    private var defaultKidID: UUID? {
+        KidPicker.resolve(storedID: currentKidID, availableIDs: kids.map(\.id))
     }
 
     private func confirm() {
-        guard let id = selectedKidID ?? defaultKid,
-              let kid = kids.first(where: { $0.id == id }) else { return }
+        guard let id = selectedKidID ?? defaultKidID,
+              let kid = kids.first(where: { $0.id == id }) else {
+            toast.show(.danger, title: "没有可用的孩子")
+            onClose()
+            return
+        }
         if PointMath.kidPoints(kid) < product.cost {
             toast.show(.danger, title: "积分不足",
                        body: "\(kid.name) 的积分不够。")

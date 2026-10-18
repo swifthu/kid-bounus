@@ -93,8 +93,10 @@ struct ManualRecordSheet: View {
             return
         }
         let n = draft.delta
-        guard let kid = kids.first(where: { $0.id == pickedKidID })
-                ?? kids.first(where: { $0.id.uuidString == currentKidID }) else { return }
+        guard let kid = resolveKid() else {
+            toast.show(.danger, title: "没有可用的孩子")
+            return
+        }
         let final = note.isEmpty ? draft.title : "\(draft.title)（\(note)）"
         let outcome = RecordStore.recordFreeform(title: final, delta: n, on: kid, ctx: ctx)
         toast.show(.success, title: "\(kid.name) · \(final)",
@@ -113,9 +115,17 @@ struct ManualRecordSheet: View {
         title.trimmingCharacters(in: .whitespaces).isEmpty ? "请填标题" : "分值要为非零整数"
     }
 
+    /// currentKidID 可能是「重置数据」后遗留的旧 UUID，能解析但已无对应 Kid，
+    /// 必须经 KidPicker 回退，否则会静默失灵。
+    private func resolveKid() -> Kid? {
+        let id = pickedKidID ?? KidPicker.resolve(storedID: currentKidID,
+                                                  availableIDs: kids.map(\.id))
+        guard let id else { return nil }
+        return kids.first { $0.id == id }
+    }
+
     private func reuse(_ rf: FreeformChip) {
-        guard let kid = kids.first(where: { $0.id == pickedKidID })
-                ?? kids.first(where: { $0.id.uuidString == currentKidID }) else { return }
+        guard let kid = resolveKid() else { return }
         _ = RecordStore.recordFreeform(title: rf.title, delta: rf.delta, on: kid, ctx: ctx)
         toast.show(.success, title: "\(kid.name) · \(rf.title)",
                    body: "\(rf.delta > 0 ? "+" : "")\(rf.delta) 分")

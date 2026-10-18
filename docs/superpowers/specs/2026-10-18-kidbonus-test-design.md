@@ -1,6 +1,6 @@
 # KidBonus 测试体系设计
 
-> 日期：2026-10-18 · 状态：已批准，待实现
+> 日期：2026-10-18 · 状态：已实现
 > 背景：项目 25 个实施任务完成后审计发现，视图内联逻辑完全未被测试，且存在 7 处缺陷。
 
 ## 1. 目标
@@ -18,6 +18,8 @@
 | D5 | `Views/Sheets/ManualRecordSheet.swift:121` | `recentFreeforms()` 未按 `sourceKind == .freeform` 过滤 | 预设项与 bonus 混入「自定义记录」 |
 | D6 | `Views/Sheets/ManualRecordSheet.swift:127` | `Array(seen.values.prefix(5))` 依赖 Dictionary 无序迭代 | 每次显示的条目可能不同，不稳定 |
 | D7 | `Views/History/HistoryView.swift:102` | 天分组按时间**升序**排列 | 「历程」页最旧的一天排在最上面 |
+
+| D8 | `Views/Sheets/RedeemConfirmSheet.swift` + `ManualRecordSheet.swift` | 用 `UUID(uuidString: currentKidID) ?? kids.first?.id` 解析当前孩子，回退只在**解析失败**时生效；若 UUID 能解析但对应 Kid 已被删除（「我的 → 重置全部数据」会重建 Kid），查找失败后**静默 return** | 重置数据后，商城兑换与手动加减分**完全无响应**且无任何提示 |
 
 潜在崩溃：`Views/Stats/StatsView.swift:21` 与 `Views/Quick/QuickView.swift` 中 `kids[0].id` 在孩子列表为空时越界。
 
@@ -100,3 +102,32 @@ L1 回答「算得对不对」，L2 回答「存得对不对」，L3 回答「�
 4. 补 L2 边界用例与 L3 UI 用例
 
 先提取后接线，使第 3 批成为纯机械替换，diff 易于审阅。
+
+## 8. 实现结果
+
+四批全部完成，实测 **134 个测试通过**（120 单元 + 14 UI）。
+
+| 批次 | 内容 | 结果 |
+|---|---|---|
+| 1 | 提取 6 个纯逻辑模块 + L1 用例 | 单元测试 39 → 88 |
+| 2 | 修复 D1–D4 + 回归测试 | 单元测试 88 → 93 |
+| 3 | 视图改用模块，修 D5/D6/D7 与空列表越界 | 视图内重复实现清零 |
+| 4 | L2 边界用例 + L3 UI 用例；发现并修复 D8 | 单元测试 93 → 120，UI 13 → 14 |
+
+### D8 的发现过程
+
+D8 不在原审计清单里，是 L3 UI 测试跑出来的。定位过程：
+
+1. UI 用例间共用模拟器与持久化 store，数据互相污染 → 给 App 加 `-uitest-reset` 启动参数
+2. 「积分不足应提示」断言失败，但「取消」按钮能正常关闭弹层 → 排除「弹层点不动」
+3. 打印界面树发现 Picker 只显示标签「孩子」、无选中值 → 怀疑 `@Query` 为空
+4. 对照测试 `ManualRecordSheet`（同样用 `@Query`）显示正常 → 排除 `@Query` 失效
+5. 回到源码比对：问题在 `UUID(uuidString:) ?? kids.first?.id` 这种**回退条件写错**的写法
+
+关键点：`??` 只在左侧为 nil 时回退，而「UUID 能解析但人已不存在」不是 nil。这正是 `KidPicker.resolve` 存在的原因 —— 它校验解析结果是否真的在可用列表中。
+
+### 测试基础设施
+
+- UI 测试通过 `app.launchArguments = ["-uitest-reset"]` 隔离数据，由 `KidBonusApp.applyLaunchHooks()` 在启动时执行 `SeedData.installFresh`
+- 模拟器硬件键盘无法输入中文，UI 用例的文本输入一律用 ASCII
+- SwiftData 关系数组不保证插入顺序，断言按 `sourceKind`/`title` 定位而非下标
