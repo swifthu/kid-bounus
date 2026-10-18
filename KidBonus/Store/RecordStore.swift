@@ -80,6 +80,7 @@ enum RecordStore {
     }
 
     /// 兑换商品。
+    @MainActor
     static func redeem(_ product: Product, by kid: Kid, ctx: ModelContext) -> Bool {
         guard PointMath.kidPoints(kid) >= product.cost else { return false }
         ctx.insert(Redemption(

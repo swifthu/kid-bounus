@@ -94,6 +94,12 @@ struct MeView: View {
                         .font(.kami(.body, size: 11))
                         .foregroundStyle(Color.kami.meta)
                         .frame(maxWidth: .infinity)
+
+                    Text("字体：霞鹜文楷 LXGW WenKai · SIL OFL 1.1")
+                        .font(.kami(.body, size: 11))
+                        .foregroundStyle(Color.kami.meta)
+                        .frame(maxWidth: .infinity)
+                        .padding(.horizontal, Spacing.s4)
                 }
                 .padding(.vertical, Spacing.s4)
             }
