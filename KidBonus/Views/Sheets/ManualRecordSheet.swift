@@ -23,7 +23,7 @@ struct ManualRecordSheet: View {
                 SheetAction(title: "记录", primary: true) { save() }
             ]
         ) {
-            let recents = recentFreeforms()
+            let recents = FreeformRecents.chips(from: allHistory.entries)
             if recents.isEmpty {
                 Text("还没有自定义记录")
                     .font(.kami(.body, size: 11))
@@ -47,7 +47,7 @@ struct ManualRecordSheet: View {
             }
 
             KidTabs(kids: kids, selected: Binding(
-                get: { pickedKidID ?? UUID(uuidString: currentKidID) ?? kids.first?.id ?? UUID() },
+                get: { pickedKidID ?? KidPicker.resolve(storedID: currentKidID, availableIDs: kids.map(\.id)) ?? kids.first?.id ?? UUID() },
                 set: { pickedKidID = $0 }
             ))
 
@@ -80,16 +80,22 @@ struct ManualRecordSheet: View {
     }
 
     private func save() {
-        let t = title.trimmingCharacters(in: .whitespaces)
-        guard !t.isEmpty else { toast.show(.danger, title: "请填标题"); return }
-        guard var n = Int(deltaText), n != 0 else {
-            toast.show(.danger, title: "分值要为非零整数"); return
+        let draft: ItemDraft
+        do {
+            draft = try ItemValidator.validate(
+                kind: isAdd ? .add : .deduct,
+                title: title,
+                deltaText: deltaText,
+                descText: note
+            )
+        } catch {
+            toast.show(.danger, title: validationToastTitle)
+            return
         }
-        n = abs(n)
-        if !isAdd { n = -n }
-        let picked = pickedKidID ?? UUID(uuidString: currentKidID)
-        guard let id = picked, let kid = kids.first(where: { $0.id == id }) else { return }
-        let final = note.isEmpty ? t : "\(t)（\(note)）"
+        let n = draft.delta
+        guard let kid = kids.first(where: { $0.id == pickedKidID })
+                ?? kids.first(where: { $0.id.uuidString == currentKidID }) else { return }
+        let final = note.isEmpty ? draft.title : "\(draft.title)（\(note)）"
         let outcome = RecordStore.recordFreeform(title: final, delta: n, on: kid, ctx: ctx)
         toast.show(.success, title: "\(kid.name) · \(final)",
                    body: "\(n > 0 ? "+" : "")\(n) 分 · 当前 \(outcome.points) 分")
@@ -103,28 +109,17 @@ struct ManualRecordSheet: View {
         dismiss()
     }
 
+    private var validationToastTitle: String {
+        title.trimmingCharacters(in: .whitespaces).isEmpty ? "请填标题" : "分值要为非零整数"
+    }
+
     private func reuse(_ rf: FreeformChip) {
-        guard let id = pickedKidID ?? UUID(uuidString: currentKidID),
-              let kid = kids.first(where: { $0.id == id }) else { return }
+        guard let kid = kids.first(where: { $0.id == pickedKidID })
+                ?? kids.first(where: { $0.id.uuidString == currentKidID }) else { return }
         _ = RecordStore.recordFreeform(title: rf.title, delta: rf.delta, on: kid, ctx: ctx)
         toast.show(.success, title: "\(kid.name) · \(rf.title)",
                    body: "\(rf.delta > 0 ? "+" : "")\(rf.delta) 分")
         dismiss()
-    }
-
-    private struct FreeformChip: Identifiable {
-        let id: String
-        let title: String
-        let delta: Int
-    }
-
-    private func recentFreeforms() -> [FreeformChip] {
-        var seen: [String: FreeformChip] = [:]
-        for h in allHistory {
-            let key = h.title + "||" + String(h.delta)
-            if seen[key] == nil { seen[key] = FreeformChip(id: key, title: h.title, delta: h.delta) }
-        }
-        return Array(seen.values.prefix(5))
     }
 
     private struct Field: View {

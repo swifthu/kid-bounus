@@ -35,7 +35,7 @@ struct ShopView: View {
                         ForEach(filtered) { p in
                             ProductCard(
                                 product: p,
-                                affordable: bestPoints >= p.cost,
+                                affordable: ShopFilter.isAffordable(p, points: bestPoints),
                                 bestPoints: bestPoints
                             ) { pending = p }
                         }
@@ -73,12 +73,11 @@ struct ShopView: View {
     }
 
     private var bestPoints: Int {
-        kids.map { PointMath.kidPoints($0) }.max() ?? 0
+        ShopFilter.bestPoints(kids)
     }
 
     private var filtered: [Product] {
-        let pool = cat == nil ? products : products.filter { $0.category == cat }
-        return pool.sorted { $0.cost > $1.cost }
+        ShopFilter.filter(products, category: cat)
     }
 
     private func chip(_ text: String, selected: Bool, action: @escaping () -> Void) -> some View {

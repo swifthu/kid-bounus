@@ -24,7 +24,8 @@ struct HistoryView: View {
                     }
                     .padding(.horizontal, Spacing.s4)
 
-                    let filtered = all.filter { filter == "all" || $0.kid?.id.uuidString == filter }
+                    let selectedKidID = filter == "all" ? nil : UUID(uuidString: filter)
+                    let filtered = HistoryGrouping.filter(all.entries, kidID: selectedKidID)
                     if filtered.isEmpty {
                         Text("还没有记录，去加减分页记一笔吧。")
                             .font(.kami(.body, size: 12))
@@ -38,13 +39,13 @@ struct HistoryView: View {
                             )
                             .padding(.horizontal, Spacing.s4)
                     } else {
-                        ForEach(groupedByDay(filtered), id: \.0) { day, items in
+                        ForEach(HistoryGrouping.group(filtered)) { group in
                             VStack(alignment: .leading, spacing: Spacing.s2) {
-                                Text(dayLabel(day))
+                                Text(HistoryGrouping.label(for: group.key))
                                     .font(.kami(.body, size: 11))
                                     .foregroundStyle(Color.kami.meta)
                                     .padding(.horizontal, Spacing.s4)
-                                ForEach(items) { h in row(for: h) }
+                                ForEach(group.entries) { h in row(for: h) }
                             }
                         }
                     }
@@ -71,7 +72,7 @@ struct HistoryView: View {
         .buttonStyle(.plain)
     }
 
-    private func row(for h: HistoryRecord) -> some View {
+    private func row(for h: HistoryEntry) -> some View {
         HStack(alignment: .top, spacing: Spacing.s3) {
             Circle()
                 .fill(Color.kami.bg)
@@ -80,7 +81,7 @@ struct HistoryView: View {
                 .padding(.top, 8)
             VStack(alignment: .leading, spacing: 2) {
                 Text(h.title).font(.kami(.body, size: 13))
-                Text("\(h.kid?.name ?? "") · \(formatTime(h.timestamp))")
+                Text("\(kidName(for: h.kidID)) · \(HistoryGrouping.timeText(h.timestamp))")
                     .font(.kami(.body, size: 11)).foregroundStyle(Color.kami.meta)
             }
             Spacer()
@@ -93,30 +94,7 @@ struct HistoryView: View {
         .padding(.leading, Spacing.s4)
     }
 
-    private func groupedByDay(_ items: [HistoryRecord]) -> [(String, [HistoryRecord])] {
-        let cal = Calendar.current
-        let groups = Dictionary(grouping: items) {
-            cal.dateComponents([.year, .month, .day], from: $0.timestamp)
-        }
-        return groups
-            .sorted { (cal.date(from: $0.key) ?? .distantPast) < (cal.date(from: $1.key) ?? .distantPast) }
-            .map { (key, val) in
-                let date = cal.date(from: key) ?? .now
-                let k = DateKey.day(date)
-                return (k, val.sorted { $0.timestamp > $1.timestamp })
-            }
-    }
-
-    private func dayLabel(_ key: String) -> String {
-        if key == DateKey.today { return "今天" }
-        if key == DateKey.day(before: 1) { return "昨天" }
-        let comps = key.split(separator: "-").map { Int($0) ?? 0 }
-        if comps.count == 3 { return "\(comps[1])月\(comps[2])日" }
-        return key
-    }
-
-    private func formatTime(_ d: Date) -> String {
-        let f = DateFormatter(); f.dateFormat = "HH:mm"
-        return f.string(from: d)
+    private func kidName(for id: UUID?) -> String {
+        kids.first { $0.id == id }?.name ?? ""
     }
 }

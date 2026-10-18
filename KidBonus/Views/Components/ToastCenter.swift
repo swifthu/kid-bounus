@@ -7,16 +7,22 @@ final class ToastCenter {
         let kind: Kind
         let title: String
         let body: String?
-        enum Kind { case info, success, danger }
+        enum Kind: Equatable { case info, success, danger }
     }
     var current: Toast?
 
+    static let defaultDuration: TimeInterval = 2.4
+
     @MainActor
-    func show(_ kind: Toast.Kind, title: String, body: String? = nil) {
-        current = Toast(kind: kind, title: title, body: body)
+    func show(_ kind: Toast.Kind, title: String, body: String? = nil,
+              duration: TimeInterval = ToastCenter.defaultDuration) {
+        let toast = Toast(kind: kind, title: title, body: body)
+        current = toast
         Task { @MainActor in
-            try? await Task.sleep(nanoseconds: 2_400_000_000)
-            if current?.id == current?.id { current = nil }
+            try? await Task.sleep(nanoseconds: UInt64(duration * 1_000_000_000))
+            // 只清理自己触发的那一条。写成 current?.id == current?.id 是恒真判断，
+            // 会让先发 toast 的定时器把后来者提前清掉（如 streak 奖励提示被截断）。
+            if current?.id == toast.id { current = nil }
         }
     }
 }

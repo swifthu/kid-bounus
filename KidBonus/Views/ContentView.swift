@@ -2,9 +2,13 @@ import SwiftUI
 import SwiftData
 
 struct ContentView: View {
+    /// TabView 中「我的」的下标，供顶栏按钮跳转。
+    private static let meTabIndex = 4
+
     @Environment(\.modelContext) private var ctx
     @State private var toast = ToastCenter()
     @State private var showingStats = false
+    @State private var tab: Int = 0
 
     var body: some View {
         VStack(spacing: 0) {
@@ -20,8 +24,7 @@ struct ContentView: View {
                         .frame(width: 36, height: 36)
                 }
                 Button {
-                    // Jump to "我的": TabView programmatic switch — iOS TabView limitation;
-                    // handled in follow-up task; kept as noop placeholder here.
+                    tab = Self.meTabIndex
                 } label: {
                     Image(systemName: "person")
                         .foregroundStyle(Color.kami.muted)
@@ -34,12 +37,12 @@ struct ContentView: View {
 
             // TabView + toast overlay
             ZStack(alignment: .top) {
-                TabView {
-                    HomeView().tabItem { Label("首页", systemImage: "house") }
-                    QuickView().tabItem { Label("加减", systemImage: "plus") }
-                    ShopView().tabItem { Label("商城", systemImage: "bag") }
-                    HistoryView().tabItem { Label("历程", systemImage: "clock") }
-                    MeView().tabItem { Label("我的", systemImage: "person") }
+                TabView(selection: $tab) {
+                    HomeView().tabItem { Label("首页", systemImage: "house") }.tag(0)
+                    QuickView().tabItem { Label("加减", systemImage: "plus") }.tag(1)
+                    ShopView().tabItem { Label("商城", systemImage: "bag") }.tag(2)
+                    HistoryView().tabItem { Label("历程", systemImage: "clock") }.tag(3)
+                    MeView().tabItem { Label("我的", systemImage: "person") }.tag(Self.meTabIndex)
                 }
                 .tint(.kami.accent)
 

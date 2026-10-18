@@ -25,22 +25,29 @@ struct AddItemSheet: View {
     }
 
     private func save() {
-        let t = title.trimmingCharacters(in: .whitespaces)
-        guard !t.isEmpty else { toast.show(.danger, title: "请填名称"); return }
-        guard var d = Int(deltaText), d != 0 else {
-            toast.show(.danger, title: "分值要为非零整数"); return
+        let draft: ItemDraft
+        do {
+            draft = try ItemValidator.validate(
+                kind: kind, title: title, deltaText: deltaText, descText: desc
+            )
+        } catch {
+            let message: String
+            switch error as? ItemValidationError {
+            case .emptyTitle: message = "请填名称"
+            default:          message = "分值要为非零整数"
+            }
+            toast.show(.danger, title: message)
+            return
         }
-        if kind == .add && d < 0 { d = -d }
-        if kind == .deduct && d > 0 { d = -d }
         let item = PointItem(
-            kind: kind, title: t, delta: d,
-            iconName: kind == .add ? "checkmark" : "exclamationmark",
-            desc: desc.isEmpty ? (kind == .add ? "一个好习惯" : "需要改进的小事") : desc
+            kind: kind, title: draft.title, delta: draft.delta,
+            iconName: ItemValidator.defaultIconName(for: kind),
+            desc: draft.desc
         )
         ctx.insert(item)
         try? ctx.save()
-        toast.show(.success, title: "已新增「\(t)」",
-                   body: "\(d > 0 ? "+" : "")\(d) 分")
+        toast.show(.success, title: "已新增「\(draft.title)」",
+                   body: "\(draft.delta > 0 ? "+" : "")\(draft.delta) 分")
         dismiss()
     }
 

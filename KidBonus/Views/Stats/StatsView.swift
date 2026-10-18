@@ -18,7 +18,7 @@ struct StatsView: View {
                     .padding(.horizontal, Spacing.s4)
 
                     KidTabs(kids: kids, selected: Binding(
-                        get: { UUID(uuidString: currentKidID) ?? kids[0].id },
+                        get: { KidPicker.resolve(storedID: currentKidID, availableIDs: kids.map(\.id)) ?? kids[0].id },
                         set: { currentKidID = $0.uuidString }
                     ))
                     .padding(.horizontal, Spacing.s4)
@@ -27,8 +27,8 @@ struct StatsView: View {
                         VStack(alignment: .leading, spacing: Spacing.s4) {
                             HStack(spacing: Spacing.s3) {
                                 statBlock(value: "\(PointMath.kidPoints(kid))", label: "当前积分")
-                                statBlock(value: "\(positiveCount(kid))", label: "加分次数")
-                                statBlock(value: "\(negativeCount(kid))", label: "扣分次数")
+                                statBlock(value: "\(StatsSummary.positiveCount(kid.history.entries))", label: "加分次数")
+                                statBlock(value: "\(StatsSummary.negativeCount(kid.history.entries))", label: "扣分次数")
                             }
                             .padding(Spacing.s4)
                             .background(Color.kami.surface)
@@ -71,14 +71,6 @@ struct StatsView: View {
 
     private var currentKid: Kid? {
         kids.first { $0.id.uuidString == currentKidID } ?? kids.first
-    }
-
-    private func positiveCount(_ kid: Kid) -> Int {
-        kid.history.filter { $0.delta > 0 }.count
-    }
-
-    private func negativeCount(_ kid: Kid) -> Int {
-        kid.history.filter { $0.delta < 0 }.count
     }
 
     private func statBlock(value: String, label: String) -> some View {

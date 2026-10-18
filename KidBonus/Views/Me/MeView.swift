@@ -100,8 +100,7 @@ struct MeView: View {
             .background(Color.kami.bg)
         }
         .sheet(item: $showAddItem) { kind in
-            // AddItemSheet added in Task 22
-            EmptyView()
+            AddItemSheet(kind: kind)
         }
         .confirmationDialog("重置全部数据？此操作不可撤销。",
                             isPresented: $showReset,

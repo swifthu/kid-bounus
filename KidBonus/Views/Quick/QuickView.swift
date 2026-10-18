@@ -26,7 +26,7 @@ struct QuickView: View {
                     Group {
                         if !kids.isEmpty {
                             KidTabs(kids: kids, selected: Binding(
-                                get: { UUID(uuidString: currentKidID) ?? kids[0].id },
+                                get: { KidPicker.resolve(storedID: currentKidID, availableIDs: kids.map(\.id)) ?? kids[0].id },
                                 set: { currentKidID = $0.uuidString }
                             ))
                         }
@@ -83,8 +83,7 @@ struct QuickView: View {
             .background(Color.kami.bg)
         }
         .sheet(isPresented: $showManual) {
-            // ManualRecordSheet defined in Task 22
-            Text("手动加减分")
+            ManualRecordSheet()
         }
     }
 
