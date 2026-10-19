@@ -130,10 +130,18 @@ struct MeView: View {
         .padding(.horizontal, Spacing.s4)
     }
 
+    /// 归属孩子名；kidID 为 nil（通用）或指向已删除的孩子时都显示「通用」。
+    private func ownerName(_ kidID: UUID?) -> String {
+        guard let kidID, let kid = kids.first(where: { $0.id == kidID }) else { return "通用" }
+        return kid.name
+    }
+
     private func editRow(_ it: PointItem) -> some View {
         HStack {
             Text(it.title).font(.kami(.body, size: 13))
             Spacer()
+            Tag(text: ownerName(it.kidID), kind: .faint)
+                .accessibilityIdentifier("item.owner.\(it.title)")
             Text("\(it.delta > 0 ? "+" : "")\(it.delta)")
                 .font(.kami(.body, size: 14))
                 .foregroundStyle(it.delta > 0 ? Color.kami.success : Color.kami.danger)

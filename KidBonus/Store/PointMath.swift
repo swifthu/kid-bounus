@@ -27,4 +27,14 @@ enum PointMath {
     static func todayDelta(_ kid: Kid) -> Int {
         todayDelta(kid.history)
     }
+
+    /// 兑换后剩余积分。积分不足时为负，调用方据此决定是否放行。
+    static func afterRedeem(points: Int, cost: Int) -> Int {
+        points - cost
+    }
+
+    /// 兑换确认弹层里的分数变化文案，如 "1000 → 800"。
+    static func redeemTransition(points: Int, cost: Int) -> String {
+        "\(points) → \(afterRedeem(points: points, cost: cost))"
+    }
 }

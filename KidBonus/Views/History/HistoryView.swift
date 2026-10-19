@@ -4,6 +4,8 @@ import SwiftData
 struct HistoryView: View {
     @Query(sort: \HistoryRecord.timestamp, order: .reverse) private var all: [HistoryRecord]
     @Query private var kids: [Kid]
+    @Environment(\.modelContext) private var ctx
+    @Environment(ToastCenter.self) private var toast
     @State private var filter: String = "all"
 
     var body: some View {
@@ -45,7 +47,11 @@ struct HistoryView: View {
                                     .font(.kami(.body, size: 11))
                                     .foregroundStyle(Color.kami.meta)
                                     .padding(.horizontal, Spacing.s4)
-                                ForEach(group.entries) { h in row(for: h) }
+                                ForEach(group.entries) { h in
+                                    SwipeToDelete { delete(h) } content: {
+                                        row(for: h)
+                                    }
+                                }
                             }
                         }
                     }
@@ -73,12 +79,14 @@ struct HistoryView: View {
     }
 
     private func row(for h: HistoryEntry) -> some View {
-        HStack(alignment: .top, spacing: Spacing.s3) {
-            Circle()
-                .fill(Color.kami.bg)
-                .overlay(Circle().stroke(h.delta > 0 ? Color.kami.accent : Color.kami.danger, lineWidth: 1))
-                .frame(width: 9, height: 9)
-                .padding(.top, 8)
+        let icon = iconStyle(for: h)
+        return HStack(alignment: .top, spacing: Spacing.s3) {
+            Image(systemName: icon.name)
+                .font(.system(size: 16))
+                .foregroundStyle(icon.fg)
+                .frame(width: 34, height: 34)
+                .background(icon.bg)
+                .clipShape(RoundedRectangle(cornerRadius: Radius.sm))
             VStack(alignment: .leading, spacing: 2) {
                 Text(h.title).font(.kami(.body, size: 13))
                 Text("\(kidName(for: h.kidID)) · \(HistoryGrouping.timeText(h.timestamp))")
@@ -94,7 +102,82 @@ struct HistoryView: View {
         .padding(.leading, Spacing.s4)
     }
 
+    /// 行首图标按来源和正负区分，和加减分页的积分项图标同一套画法。
+    private func iconStyle(for h: HistoryEntry) -> (name: String, fg: Color, bg: Color) {
+        switch h.sourceKind {
+        case .streakBonus: return ("flame.fill", .kami.warn, Color(hex: 0xEFE7D3))
+        case .freeform:    return ("pencil", .kami.muted, .kami.tagBgFaint)
+        case .redemption:  return ("gift", .kami.accent, .kami.tagBgSoft)
+        case .preset:
+            return h.delta > 0
+                ? ("checkmark", .kami.accent, .kami.tagBgSoft)
+                : ("exclamationmark", .kami.danger, Color(hex: 0xEFE2DF))
+        }
+    }
+
     private func kidName(for id: UUID?) -> String {
         kids.first { $0.id == id }?.name ?? ""
+    }
+
+    /// 删除一条记录：积分是历史与兑换的汇总值，删掉即回调，这里只提示回调了多少。
+    private func delete(_ h: HistoryEntry) {
+        guard let record = all.first(where: { $0.id == h.id }) else {
+            toast.show(.danger, title: "这条记录已经不在了")
+            return
+        }
+        let who = kidName(for: h.kidID)
+        let points = RecordStore.deleteRecord(record, ctx: ctx)
+        toast.show(.success, title: "已删除「\(h.title)」",
+                   body: "回调 \(abs(h.delta)) 分 · \(who)当前 \(points) 分")
+    }
+}
+
+/// 右滑露出删除按钮。列表是 ScrollView + VStack 而不是 List，
+/// 系统 swipeActions 在这里不生效，只能自己实现。
+private struct SwipeToDelete<Content: View>: View {
+    let onDelete: () -> Void
+    @ViewBuilder let content: Content
+
+    @State private var isOpen = false
+    @State private var x: CGFloat = 0
+    private let buttonWidth: CGFloat = 84
+
+    var body: some View {
+        ZStack(alignment: .leading) {
+            content
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.kami.bg)
+                .offset(x: x)
+                // simultaneousGesture：与外层 ScrollView 共存，竖向滑动仍能滚动
+                .simultaneousGesture(
+                    DragGesture(minimumDistance: 8)
+                        .onChanged { v in
+                            let base = isOpen ? buttonWidth : 0
+                            x = min(max(base + v.translation.width, 0), buttonWidth)
+                        }
+                        .onEnded { _ in
+                            withAnimation(.spring(response: 0.25, dampingFraction: 0.9)) {
+                                isOpen = x > buttonWidth / 2
+                                x = isOpen ? buttonWidth : 0
+                            }
+                        }
+                )
+
+            // 只在展开时存在：收起时若按钮仍在，内容行会盖住它导致点不动
+            if isOpen {
+                Button {
+                    withAnimation { isOpen = false; x = 0 }
+                    onDelete()
+                } label: {
+                    Text("删除")
+                        .font(.kami(.body, size: 14))
+                        .foregroundStyle(Color.kami.danger)
+                        .frame(width: buttonWidth)
+                        .frame(maxHeight: .infinity)
+                        .background(Color(hex: 0xEFE2DF))
+                }
+                .buttonStyle(.plain)
+            }
+        }
     }
 }

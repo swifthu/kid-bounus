@@ -91,4 +91,14 @@ enum RecordStore {
         try? ctx.save()
         return true
     }
+
+    /// 删掉一条记录并回调积分。积分由历史与兑换汇总得出，所以删掉即回调，
+    /// 不需要额外写一条反向记录。返回回调后该孩子的积分。
+    @MainActor
+    static func deleteRecord(_ record: HistoryRecord, ctx: ModelContext) -> Int {
+        let kid = record.kid
+        ctx.delete(record)
+        try? ctx.save()
+        return kid.map(PointMath.kidPoints) ?? 0
+    }
 }

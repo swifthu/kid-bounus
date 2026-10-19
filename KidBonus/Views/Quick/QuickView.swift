@@ -26,7 +26,7 @@ struct QuickView: View {
                     Group {
                         if !kids.isEmpty {
                             KidTabs(kids: kids, selected: Binding(
-                                get: { KidPicker.resolve(storedID: currentKidID, availableIDs: kids.map(\.id)) ?? kids[0].id },
+                                get: { selectedKidID ?? kids[0].id },
                                 set: { currentKidID = $0.uuidString }
                             ))
                         }
@@ -36,7 +36,7 @@ struct QuickView: View {
                     SectionHeader(num: nil, label: "加分项")
                         .padding(.horizontal, Spacing.s4)
                     VStack(spacing: Spacing.s3) {
-                        ForEach(allItems.filter { $0.kind == .add }) { item in
+                        ForEach(scopedItems.filter { $0.kind == .add }) { item in
                             ItemRow(item: item) { addOrDeduct(item) }
                         }
                     }
@@ -45,7 +45,7 @@ struct QuickView: View {
                     SectionHeader(num: nil, label: "扣分项")
                         .padding(.horizontal, Spacing.s4)
                     VStack(spacing: Spacing.s3) {
-                        ForEach(allItems.filter { $0.kind == .deduct }) { item in
+                        ForEach(scopedItems.filter { $0.kind == .deduct }) { item in
                             ItemRow(item: item) { addOrDeduct(item) }
                         }
                     }
@@ -85,6 +85,15 @@ struct QuickView: View {
         .sheet(isPresented: $showManual) {
             ManualRecordSheet()
         }
+    }
+
+    /// currentKidID 可能是「重置数据」后遗留的旧 UUID，必须经 KidPicker 回退。
+    private var selectedKidID: UUID? {
+        KidPicker.resolve(storedID: currentKidID, availableIDs: kids.map(\.id))
+    }
+
+    private var scopedItems: [PointItem] {
+        ItemFilter.visible(allItems, kidID: selectedKidID)
     }
 
     private func addOrDeduct(_ item: PointItem) {

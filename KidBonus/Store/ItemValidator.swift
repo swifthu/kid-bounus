@@ -9,13 +9,15 @@ struct ItemDraft: Equatable {
     let title: String
     let delta: Int
     let desc: String
+    var kidID: UUID?
 }
 
 /// 新增积分项的输入校验与归一化。
 enum ItemValidator {
     /// 分值符号强制与 kind 一致：加分项恒为正，扣分项恒为负（用户输反了也纠正）。
-    /// 描述留空时按 kind 填默认文案。
-    static func validate(kind: Kind, title: String, deltaText: String, descText: String) throws -> ItemDraft {
+    /// 描述留空时按 kind 填默认文案。kidID 为 nil 时该项两个孩子都可见。
+    static func validate(kind: Kind, kidID: UUID? = nil,
+                         title: String, deltaText: String, descText: String) throws -> ItemDraft {
         let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedTitle.isEmpty else { throw ItemValidationError.emptyTitle }
 
@@ -31,7 +33,7 @@ enum ItemValidator {
             ? (kind == .add ? "一个好习惯" : "需要改进的小事")
             : trimmedDesc
 
-        return ItemDraft(title: trimmedTitle, delta: delta, desc: desc)
+        return ItemDraft(title: trimmedTitle, delta: delta, desc: desc, kidID: kidID)
     }
 
     static func defaultIconName(for kind: Kind) -> String {

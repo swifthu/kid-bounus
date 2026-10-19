@@ -3,9 +3,24 @@ import SwiftData
 
 struct HomeView: View {
     @Query private var kids: [Kid]
-    @Query(sort: \Product.cost, order: .reverse) private var products: [Product]
     @Environment(\.modelContext) private var ctx
-    @Environment(ToastCenter.self) private var toast
+    @State private var quickPick: QuickPick? = nil
+
+    /// 首页三个入口共用一个弹层：点头像卡片列全部加减分项，
+    /// 点「加分 / 扣分」按钮只列对应的一类，且需要在弹层里选孩子。
+    private enum QuickPick: Identifiable {
+        case kid(String)
+        case add
+        case deduct
+
+        var id: String {
+            switch self {
+            case .kid(let uuid): return uuid
+            case .add:  return "add"
+            case .deduct: return "deduct"
+            }
+        }
+    }
 
     var body: some View {
         NavigationStack {
@@ -32,7 +47,7 @@ struct HomeView: View {
                                 streak: streak(for: kid),
                                 bonusActive: streak(for: kid) >= 7
                             ) {
-                                toast.show(.info, title: "切换到「加减」tab")
+                                quickPick = .kid(kid.id.uuidString)
                             }
                         }
                     }
@@ -43,20 +58,10 @@ struct HomeView: View {
 
                     HStack(spacing: Spacing.s2) {
                         KamiButton("加分", systemImage: "plus", style: .primary) {
-                            toast.show(.info, title: "切换到「加减」tab")
+                            quickPick = .add
                         }
                         KamiButton("扣分", systemImage: "minus", style: .secondary) {
-                            toast.show(.info, title: "切换到「加减」tab")
-                        }
-                    }
-                    .padding(.horizontal, Spacing.s4)
-
-                    SectionHeader(num: "03", label: "推荐商品")
-                        .padding(.horizontal, Spacing.s4)
-
-                    LazyVGrid(columns: [.init(.flexible()), .init(.flexible())], spacing: Spacing.s3) {
-                        ForEach(products.prefix(4)) { p in
-                            ProductCard(product: p, affordable: bestPoints >= p.cost, bestPoints: bestPoints) {}
+                            quickPick = .deduct
                         }
                     }
                     .padding(.horizontal, Spacing.s4)
@@ -65,10 +70,13 @@ struct HomeView: View {
             }
             .background(Color.kami.bg)
         }
-    }
-
-    private var bestPoints: Int {
-        kids.map { PointMath.kidPoints($0) }.max() ?? 0
+        .sheet(item: $quickPick) { target in
+            switch target {
+            case .kid(let uuid): KidQuickPickSheet(kidID: UUID(uuidString: uuid), kind: nil)
+            case .add:           KidQuickPickSheet(kidID: nil, kind: .add)
+            case .deduct:        KidQuickPickSheet(kidID: nil, kind: .deduct)
+            }
+        }
     }
 
     private func streak(for kid: Kid) -> Int {

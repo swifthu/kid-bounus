@@ -7,6 +7,7 @@ struct ShopView: View {
     @Query(sort: \Redemption.timestamp, order: .reverse) private var redemptions: [Redemption]
     @State private var cat: ProductCategory? = nil
     @State private var pending: Product? = nil
+    @State private var showManage = false
     @Environment(\.modelContext) private var ctx
     @Environment(ToastCenter.self) private var toast
 
@@ -18,9 +19,23 @@ struct ShopView: View {
                 VStack(alignment: .leading, spacing: Spacing.s5) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("积分商城").font(.kami(.body, size: 28))
-                        Text("点击商品兑换。不足会标灰。")
-                            .font(.kami(.body, size: 14))
-                            .foregroundStyle(Color.kami.muted)
+                        HStack(alignment: .firstTextBaseline, spacing: Spacing.s2) {
+                            Text("点击商品兑换，先确认扣分。")
+                                .font(.kami(.body, size: 14))
+                                .foregroundStyle(Color.kami.muted)
+                            Spacer()
+                            // 放在内容里而不是导航栏：工具栏按钮会把 28pt 大标题挤到第二行
+                            Button { showManage = true } label: {
+                                HStack(spacing: 2) {
+                                    Image(systemName: "slider.horizontal.3")
+                                    Text("管理")
+                                }
+                                .font(.kami(.body, size: 13))
+                                .foregroundStyle(Color.kami.accent)
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityIdentifier("shop.manage")
+                        }
                     }
                     .padding(.horizontal, Spacing.s4)
 
@@ -61,6 +76,9 @@ struct ShopView: View {
                 .padding(.vertical, Spacing.s4)
             }
             .background(Color.kami.bg)
+            .navigationDestination(isPresented: $showManage) {
+                ShopManageView()
+            }
         }
         .sheet(isPresented: Binding(
             get: { pending != nil },

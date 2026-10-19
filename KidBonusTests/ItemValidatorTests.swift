@@ -77,4 +77,17 @@ final class ItemValidatorTests: XCTestCase {
         XCTAssertEqual(ItemValidator.defaultIconName(for: .add), "checkmark")
         XCTAssertEqual(ItemValidator.defaultIconName(for: .deduct), "exclamationmark")
     }
+
+    func test默认无归属即两个孩子通用() throws {
+        XCTAssertNil(try ItemValidator.validate(
+            kind: .add, title: "x", deltaText: "5", descText: ""
+        ).kidID)
+    }
+
+    func test归属孩子被保留() throws {
+        let id = UUID()
+        XCTAssertEqual(try ItemValidator.validate(
+            kind: .add, kidID: id, title: "x", deltaText: "5", descText: ""
+        ).kidID, id)
+    }
 }

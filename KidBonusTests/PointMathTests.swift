@@ -35,4 +35,25 @@ final class PointMathTests: XCTestCase {
         try ctx.save()
         XCTAssertEqual(PointMath.todayDelta([h1, h2]), 1)
     }
+
+    func test兑换后剩余积分() {
+        XCTAssertEqual(PointMath.afterRedeem(points: 1000, cost: 200), 800)
+    }
+
+    func test积分刚好够时剩余为0() {
+        XCTAssertEqual(PointMath.afterRedeem(points: 200, cost: 200), 0)
+    }
+
+    /// 积分不足时算出负数，由调用方决定是否放行。
+    func test积分不足时剩余为负() {
+        XCTAssertEqual(PointMath.afterRedeem(points: 30, cost: 50), -20)
+    }
+
+    func test兑换前后分数文案() {
+        XCTAssertEqual(PointMath.redeemTransition(points: 1000, cost: 200), "1000 → 800")
+    }
+
+    func test兑换前后分数文案含负数() {
+        XCTAssertEqual(PointMath.redeemTransition(points: 30, cost: 50), "30 → -20")
+    }
 }

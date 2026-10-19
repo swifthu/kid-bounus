@@ -33,7 +33,40 @@ struct RedeemConfirmSheet: View {
             .padding(Spacing.s3)
             .background(Color.kami.surface)
             .clipShape(RoundedRectangle(cornerRadius: Radius.md))
+
+            transitionCard
         }
+    }
+
+    /// 兑换前后分数对照，如「1000 → 800」。积分不足时改为提示还差多少。
+    private var transitionCard: some View {
+        VStack(spacing: 4) {
+            Text(affordable
+                 ? PointMath.redeemTransition(points: pointsBefore, cost: product.cost)
+                 : "还差 \(ShopFilter.shortfall(product, points: pointsBefore)) 分")
+                .font(.kami(.body, size: 20))
+                .foregroundStyle(affordable ? Color.kami.accent : Color.kami.danger)
+            Text(affordable ? "兑换后剩余分数" : "当前 \(pointsBefore) 分")
+                .font(.kami(.body, size: 11))
+                .foregroundStyle(Color.kami.meta)
+        }
+        .padding(Spacing.s3)
+        .frame(maxWidth: .infinity)
+        .background(Color.kami.surface)
+        .clipShape(RoundedRectangle(cornerRadius: Radius.md))
+    }
+
+    private var selectedKid: Kid? {
+        guard let id = selectedKidID ?? defaultKidID else { return nil }
+        return kids.first { $0.id == id }
+    }
+
+    private var pointsBefore: Int {
+        selectedKid.map(PointMath.kidPoints) ?? 0
+    }
+
+    private var affordable: Bool {
+        ShopFilter.isAffordable(product, points: pointsBefore)
     }
 
     /// 必须经 KidPicker 校验：currentKidID 可能是「重置数据」后遗留的旧 UUID，

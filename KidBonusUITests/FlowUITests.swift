@@ -35,6 +35,15 @@ final class FlowUITests: XCTestCase {
         return t
     }
 
+    /// 点输入框后要等键盘真的弹出来，否则偶发 "no keyboard focus" 输不进字。
+    private func focus(_ field: XCUIElement) {
+        for _ in 0..<3 {
+            field.tap()
+            if app.keyboards.firstMatch.waitForExistence(timeout: 2) { return }
+        }
+        XCTFail("键盘没有弹出，无法输入")
+    }
+
     // MARK: 种子数据
 
     func test启动显示两个孩子种子数据() {
@@ -46,7 +55,49 @@ final class FlowUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["0"].exists, "重置后小明积分应为 0")
     }
 
+    // MARK: 首页快捷记分
+
+    /// 此前首页三个入口只弹一句「切换到加减 tab」的提示，什么也做不了。
+    func test首页加分按钮弹层可记分() {
+        goToTab("首页")
+        button(startingWith: "加分").tap()
+
+        XCTAssertTrue(app.staticTexts["加分项"].waitForExistence(timeout: 5), "应弹出加分项列表")
+        XCTAssertFalse(app.staticTexts["扣分项"].exists, "加分入口不应列出扣分项")
+
+        button(startingWith: "完成作业").tap()
+
+        let toast = app.staticTexts.containing(
+            NSPredicate(format: "label CONTAINS %@", "当前 5 分")
+        ).firstMatch
+        XCTAssertTrue(toast.waitForExistence(timeout: 5), "记分后应提示当前积分")
+    }
+
+    func test首页扣分按钮弹层只列扣分项() {
+        goToTab("首页")
+        button(startingWith: "扣分").tap()
+
+        XCTAssertTrue(app.staticTexts["扣分项"].waitForExistence(timeout: 5), "应弹出扣分项列表")
+        XCTAssertFalse(app.staticTexts["加分项"].exists, "扣分入口不应列出加分项")
+    }
+
+    func test首页点头像卡片弹层列全部加减分项() {
+        goToTab("首页")
+        button(startingWith: "小明").tap()
+
+        XCTAssertTrue(app.staticTexts["加分项"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["扣分项"].exists, "点头像卡片应同时列出加分项与扣分项")
+        XCTAssertTrue(app.staticTexts["给小明记分"].exists, "弹层标题应指明是给谁记分")
+    }
+
     // MARK: 加减分联动
+
+    /// 首页不再承载商城内容，商品只在「商城」页出现。
+    func test首页不含推荐商品() {
+        goToTab("首页")
+        XCTAssertFalse(app.staticTexts["推荐商品"].exists, "首页不应再有推荐商品区块")
+        XCTAssertFalse(app.staticTexts["乐高积木"].exists, "首页不应出现商品卡片")
+    }
 
     func test加分后toast出现且积分增加() {
         goToTab("加减")
@@ -167,6 +218,99 @@ final class FlowUITests: XCTestCase {
         XCTAssertFalse(app.staticTexts["乐高积木"].exists, "切到图书分类后不应显示玩具")
     }
 
+    /// 兑换前要能看清扣多少分、扣完还剩多少分。
+    func test兑换确认显示兑换前后分数() {
+        // 七个种子加分项共 32 分，够换 25 分的贴纸
+        goToTab("加减")
+        for name in ["完成作业", "阅读 30 分", "整理房间", "帮忙家务",
+                     "运动 30 分", "刷牙早晚", "主动练琴"] {
+            button(startingWith: name).tap()
+        }
+
+        goToTab("商城")
+        button(startingWith: "贴纸一包").tap()
+
+        XCTAssertTrue(app.buttons["兑换"].waitForExistence(timeout: 5), "应弹出兑换确认")
+        let transition = app.staticTexts.containing(
+            NSPredicate(format: "label MATCHES %@", "[0-9]+ → [0-9]+")
+        ).firstMatch
+        XCTAssertTrue(transition.waitForExistence(timeout: 5),
+                      "确认弹层应显示「兑换前 → 兑换后」的分数")
+        XCTAssertEqual(transition.label, "32 → 7")
+    }
+
+    func test商品管理页可打开并新增商品() {
+        goToTab("商城")
+        let manage = app.buttons["shop.manage"]
+        XCTAssertTrue(manage.waitForExistence(timeout: 5), "商城页应有商品管理入口")
+        manage.tap()
+
+        XCTAssertTrue(app.staticTexts["商品管理"].waitForExistence(timeout: 5))
+        button(startingWith: "新增商品").tap()
+
+        let fields = app.textFields
+        focus(fields.element(boundBy: 0))
+        fields.element(boundBy: 0).typeText("giftbox")
+        focus(fields.element(boundBy: 1))
+        fields.element(boundBy: 1).typeText("120")
+
+        app.buttons["保存"].tap()
+
+        XCTAssertTrue(app.staticTexts["giftbox"].waitForExistence(timeout: 5),
+                      "新增的商品应出现在管理列表")
+    }
+
+    func test商品管理页可删除商品() {
+        goToTab("商城")
+        app.buttons["shop.manage"].tap()
+        XCTAssertTrue(app.staticTexts["乐高积木"].waitForExistence(timeout: 5))
+
+        // 列表按分值从高到低排，第一行就是乐高积木；删除按钮的 label 取 SF Symbol 名。
+        let del = app.buttons["trash"].firstMatch
+        XCTAssertTrue(del.waitForExistence(timeout: 5), "管理列表每行都应有删除按钮")
+        del.tap()
+
+        XCTAssertFalse(app.staticTexts["乐高积木"].waitForExistence(timeout: 2),
+                       "删除后该商品应从列表消失")
+    }
+
+    /// 新增的加分项只归属一个孩子，换孩子后不该再出现。
+    func test加减分项按归属孩子过滤() {
+        goToTab("我的")
+        button(startingWith: "增加加分项").tap()
+        XCTAssertTrue(app.buttons["保存"].waitForExistence(timeout: 5), "AddItemSheet 未打开")
+
+        // 分段选择器的每一段在无障碍树里就是普通按钮
+        let red = app.buttons["小红"]
+        XCTAssertTrue(red.waitForExistence(timeout: 5), "新增弹层应能选择归属孩子")
+        red.tap()
+        print("=== TAPPED RED ===")
+        let sheetTexts = app.staticTexts.allElementsBoundByIndex.map { $0.label }
+        print(sheetTexts)
+
+        let fields = app.textFields
+        focus(fields.element(boundBy: 0))
+        fields.element(boundBy: 0).typeText("kidonly")
+        focus(fields.element(boundBy: 1))
+        fields.element(boundBy: 1).typeText("7")
+        app.buttons["保存"].tap()
+
+        XCTAssertTrue(app.staticTexts["kidonly"].waitForExistence(timeout: 5))
+        XCTAssertEqual(app.staticTexts["item.owner.kidonly"].label, "小红",
+                       "选了小红的项应归属于小红")
+
+        // 加减页显式切到小明再断言：默认选中哪个孩子会受上一次运行残留的
+        // currentKidID 影响，这里要验的是过滤本身。
+        goToTab("加减")
+        button(startingWith: "小明").tap()
+        XCTAssertFalse(app.staticTexts["kidonly"].waitForExistence(timeout: 2),
+                       "归属小红的项不应出现在小明的列表里")
+
+        button(startingWith: "小红").tap()
+        XCTAssertTrue(app.staticTexts["kidonly"].waitForExistence(timeout: 5),
+                      "切到小红后应能看到归属她的项")
+    }
+
     // MARK: 历程
 
     func test历程页空态() {
@@ -183,6 +327,38 @@ final class FlowUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["今天"].waitForExistence(timeout: 5),
                       "记录应归入「今天」分组")
         XCTAssertTrue(app.staticTexts["完成作业"].exists)
+    }
+
+    /// 右滑露出删除按钮，删掉后积分要回调。
+    func test历程右滑删除并回调积分() {
+        goToTab("加减")
+        button(startingWith: "完成作业").tap()   // +5
+        sleep(1)
+
+        goToTab("历程")
+        XCTAssertTrue(app.staticTexts["完成作业"].waitForExistence(timeout: 5))
+
+        let row = app.staticTexts["完成作业"]
+        // 标题文本很窄，要拖到 dx 2.5 才够拉开删除按钮
+        let start = row.coordinate(withNormalizedOffset: CGVector(dx: 0.2, dy: 0.5))
+        let end = row.coordinate(withNormalizedOffset: CGVector(dx: 2.5, dy: 0.5))
+        start.press(forDuration: 0.05, thenDragTo: end)
+
+        let del = app.buttons["删除"]
+        XCTAssertTrue(del.waitForExistence(timeout: 5), "右滑应露出删除按钮")
+        del.tap()
+
+        // toast 只显示 2.4 秒，必须先查它，再做会耗时 2 秒的存在性断言
+        let toast = app.staticTexts.containing(
+            NSPredicate(format: "label CONTAINS %@", "回调 5 分")
+        ).firstMatch
+        XCTAssertTrue(toast.waitForExistence(timeout: 5), "应提示回调了多少分")
+        XCTAssertFalse(app.staticTexts["完成作业"].waitForExistence(timeout: 2),
+                       "删除后该记录应消失")
+
+        goToTab("首页")
+        XCTAssertTrue(app.staticTexts["0"].waitForExistence(timeout: 5),
+                      "删掉 +5 后积分应回到 0")
     }
 
     // MARK: 统计
