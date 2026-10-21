@@ -41,6 +41,9 @@ struct SheetScaffold<Content: View>: View {
         }
         .padding(Spacing.s4)
         .background(Color.kami.bg)
+        // 系统 sheet 本身是半透明材质，内容不满一屏时下方会透出父页面，
+        // 看起来像透明窗口和纯色窗口叠在一起。这里把整块弹层都刷成实色。
+        .presentationBackground(Color.kami.bg)
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.hidden)
     }

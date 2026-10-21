@@ -108,6 +108,7 @@ struct HistoryView: View {
         case .streakBonus: return ("flame.fill", .kami.warn, Color(hex: 0xEFE7D3))
         case .freeform:    return ("pencil", .kami.muted, .kami.tagBgFaint)
         case .redemption:  return ("gift", .kami.accent, .kami.tagBgSoft)
+        case .adjust:      return ("slider.horizontal.3", .kami.accent, .kami.tagBgSoft)
         case .preset:
             return h.delta > 0
                 ? ("checkmark", .kami.accent, .kami.tagBgSoft)

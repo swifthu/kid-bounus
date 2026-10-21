@@ -119,4 +119,57 @@ final class RecordStoreTests: XCTestCase {
 
         XCTAssertEqual(points, -30, "删掉历史后仍应扣着兑换的 30 分")
     }
+
+    // MARK: 直接设定积分
+
+    func test设定积分写入差额记录() throws {
+        let container = try makeContainer()
+        let ctx = container.mainContext
+        let kid = Kid(name: "小明", age: 8, colorHex: "#1B365D")
+        ctx.insert(kid)
+        let item = PointItem(kind: .add, title: "A", delta: 20, desc: "d")
+        ctx.insert(item)
+        _ = RecordStore.recordItem(item, on: kid, ctx: ctx)
+
+        let points = RecordStore.setPoints(100, for: kid, ctx: ctx)
+
+        XCTAssertEqual(points, 100)
+        XCTAssertEqual(kid.history.count, 2, "应多出一条差额记录")
+        // 关系数组无序，按来源找那条差额记录
+        let adjust = try XCTUnwrap(kid.history.first { $0.sourceKind == .adjust })
+        XCTAssertEqual(adjust.delta, 80)
+        XCTAssertEqual(adjust.title, "设定积分为 100")
+    }
+
+    func test设定为当前积分不产生记录() throws {
+        let container = try makeContainer()
+        let ctx = container.mainContext
+        let kid = Kid(name: "小明", age: 8, colorHex: "#1B365D")
+        ctx.insert(kid)
+        let item = PointItem(kind: .add, title: "A", delta: 20, desc: "d")
+        ctx.insert(item)
+        _ = RecordStore.recordItem(item, on: kid, ctx: ctx)
+
+        let points = RecordStore.setPoints(20, for: kid, ctx: ctx)
+
+        XCTAssertEqual(points, 20)
+        XCTAssertEqual(kid.history.count, 1, "没有差额就不该写记录")
+    }
+
+    /// 设定值可以和当前积分不同向，比如把扣掉的分补回来。
+    func test设定积分可以调低() throws {
+        let container = try makeContainer()
+        let ctx = container.mainContext
+        let kid = Kid(name: "小明", age: 8, colorHex: "#1B365D")
+        ctx.insert(kid)
+        let item = PointItem(kind: .add, title: "A", delta: 50, desc: "d")
+        ctx.insert(item)
+        _ = RecordStore.recordItem(item, on: kid, ctx: ctx)
+
+        let points = RecordStore.setPoints(10, for: kid, ctx: ctx)
+
+        XCTAssertEqual(points, 10)
+        let adjust = try XCTUnwrap(kid.history.first { $0.sourceKind == .adjust })
+        XCTAssertEqual(adjust.delta, -40)
+    }
 }

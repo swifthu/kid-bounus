@@ -90,6 +90,40 @@ final class FlowUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["给小明记分"].exists, "弹层标题应指明是给谁记分")
     }
 
+    /// 点首页大积分数 → 弹窗直接设定这个孩子的总积分。
+    func test首页点积分数可设定积分() {
+        goToTab("加减")
+        button(startingWith: "完成作业").tap()   // +5
+        sleep(1)
+
+        goToTab("首页")
+        // 大积分数：小明的 5 分
+        app.staticTexts["5"].firstMatch.tap()
+
+        XCTAssertTrue(app.buttons["保存"].waitForExistence(timeout: 5), "应弹出设定积分弹层")
+        // 弹层标题和说明会被合并成一个无障碍元素，用包含匹配
+        let title = app.staticTexts.containing(
+            NSPredicate(format: "label CONTAINS %@", "设定小明的积分")
+        ).firstMatch
+        XCTAssertTrue(title.exists, "弹层标题应指明是给谁设定积分")
+
+        let field = app.textFields.firstMatch
+        XCTAssertTrue(field.waitForExistence(timeout: 5))
+        focus(field)
+        field.typeText("100")
+
+        app.buttons["保存"].tap()
+
+        // toast 只显示 2.4 秒，必须先查它
+        let toast = app.staticTexts.containing(
+            NSPredicate(format: "label CONTAINS %@", "积分已设为 100")
+        ).firstMatch
+        XCTAssertTrue(toast.waitForExistence(timeout: 5), "应提示设定结果")
+
+        XCTAssertTrue(app.staticTexts["100"].waitForExistence(timeout: 5),
+                      "首页大积分数应变为 100")
+    }
+
     // MARK: 加减分联动
 
     /// 首页不再承载商城内容，商品只在「商城」页出现。

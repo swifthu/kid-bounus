@@ -101,4 +101,22 @@ enum RecordStore {
         try? ctx.save()
         return kid.map(PointMath.kidPoints) ?? 0
     }
+
+    /// 直接设定孩子的总积分。积分是历史与兑换的汇总值，所以写一条差额记录对齐到目标值，
+    /// 这样历程里仍能看出积分是怎么变的。返回设定后的积分。
+    @MainActor
+    static func setPoints(_ target: Int, for kid: Kid, ctx: ModelContext) -> Int {
+        let current = PointMath.kidPoints(kid)
+        let delta = target - current
+        if delta != 0 {
+            ctx.insert(HistoryRecord(
+                kid: kid,
+                title: "设定积分为 \(target)",
+                delta: delta,
+                sourceKind: .adjust
+            ))
+            try? ctx.save()
+        }
+        return PointMath.kidPoints(kid)
+    }
 }

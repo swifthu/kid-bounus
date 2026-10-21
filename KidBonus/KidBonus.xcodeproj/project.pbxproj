@@ -46,6 +46,7 @@
 		78367FFC27910B09B01FF618 /* ProductValidatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9B9377515489B438B439169 /* ProductValidatorTests.swift */; };
 		7D6774DFC287B7A6E5540C92 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCFC5E4C43821EA77AD72557 /* AppState.swift */; };
 		7F921FF3F37761DA02A025F1 /* FreeformRecents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22B041171157D739BEE8A1DB /* FreeformRecents.swift */; };
+		82616E3586E92E9595EFD0B9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 71F8C20603EE927ADD5D6D63 /* Assets.xcassets */; };
 		84788E7FFAAF2ACC0E9572FB /* ManualRecordSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7109BDEC36039C084A858CB3 /* ManualRecordSheet.swift */; };
 		8A6883774CA2ACBBC9DC1CC9 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7568AB568FDFC3594D78459D /* ContentView.swift */; };
 		920D231F7B04731F5493488F /* ProductCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D9948643F44433DB3800C90 /* ProductCard.swift */; };
@@ -78,6 +79,7 @@
 		F68A00B89C5294DF2739080A /* ShopFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C8F474446B391DEC00C0066 /* ShopFilterTests.swift */; };
 		F7851516096CC7A6FB1AFC62 /* ToastCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 540AE2CC1B2F758DB336232D /* ToastCenter.swift */; };
 		F78FF28DCB00C0B58C0DA9D5 /* FreeformRecentsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F72335B05BC06A810D6A9521 /* FreeformRecentsTests.swift */; };
+		F9EC4287DE1F123DC9EDC5AA /* SetPointsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A98DADB6BEC5CAE2D22AE2F8 /* SetPointsSheet.swift */; };
 		FB02C4A87CEDA13F04118386 /* OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = D6AF51A3FF8C5555DD5375A0 /* OFL.txt */; };
 /* End PBXBuildFile section */
 
@@ -134,6 +136,7 @@
 		69B1DA73AFA99A8F8E533D8B /* StatsSummaryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsSummaryTests.swift; sourceTree = "<group>"; };
 		6B4BE0A72072816B584F9FF8 /* HistoryRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryRecord.swift; sourceTree = "<group>"; };
 		7109BDEC36039C084A858CB3 /* ManualRecordSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManualRecordSheet.swift; sourceTree = "<group>"; };
+		71F8C20603EE927ADD5D6D63 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		7257983877D92D576F42042A /* FlowUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowUITests.swift; sourceTree = "<group>"; };
 		7568AB568FDFC3594D78459D /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		758AE9577BF7F47F416CD878 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
@@ -147,6 +150,7 @@
 		9C934A4F95194A616EBE61F4 /* MeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeView.swift; sourceTree = "<group>"; };
 		A498F4929E361DAFFEB88BAA /* KidPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KidPicker.swift; sourceTree = "<group>"; };
 		A5EFFCCF3C9FB13CB1FE264C /* KidModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KidModels.swift; sourceTree = "<group>"; };
+		A98DADB6BEC5CAE2D22AE2F8 /* SetPointsSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetPointsSheet.swift; sourceTree = "<group>"; };
 		B0E8D82F554DF081E41000B2 /* RecordStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordStoreTests.swift; sourceTree = "<group>"; };
 		B253CC3BF0D89DAAE52E57C7 /* Kid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Kid.swift; sourceTree = "<group>"; };
 		B27C90166CD46BF763C67A56 /* ProductEditSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductEditSheet.swift; sourceTree = "<group>"; };
@@ -219,6 +223,14 @@
 			);
 			name = KidBonusTests;
 			path = ../KidBonusTests;
+			sourceTree = "<group>";
+		};
+		1B6C28FA8322D8612955B197 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				71F8C20603EE927ADD5D6D63 /* Assets.xcassets */,
+			);
+			path = Resources;
 			sourceTree = "<group>";
 		};
 		2D4D10A8B017BA0329DA9EFD /* Components */ = {
@@ -342,6 +354,7 @@
 				7109BDEC36039C084A858CB3 /* ManualRecordSheet.swift */,
 				B27C90166CD46BF763C67A56 /* ProductEditSheet.swift */,
 				3FC4D8D9B67D14350EBA3C3D /* RedeemConfirmSheet.swift */,
+				A98DADB6BEC5CAE2D22AE2F8 /* SetPointsSheet.swift */,
 			);
 			path = Sheets;
 			sourceTree = "<group>";
@@ -354,6 +367,7 @@
 				0FFD13ED7C83E928D3707005 /* KidBonusTests */,
 				E10CFE4FF6BD8705492D721C /* KidBonusUITests */,
 				9588EFD1513982ABAF797BEF /* Models */,
+				1B6C28FA8322D8612955B197 /* Resources */,
 				B92489F2A8B3986BE1385D84 /* Store */,
 				F0F31491BC11A5882DF0E373 /* Theme */,
 				6469CEF2E6942A43369D1E64 /* Views */,
@@ -504,6 +518,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				82616E3586E92E9595EFD0B9 /* Assets.xcassets in Resources */,
 				CFC0FCA9A571E9CA93362609 /* LXGWWenKai-Light.ttf in Resources */,
 				D39BC3DFC5D8E766BE51DDE7 /* LXGWWenKai-Regular.ttf in Resources */,
 				FB02C4A87CEDA13F04118386 /* OFL.txt in Resources */,
@@ -554,6 +569,7 @@
 				C58C21065D4310AB67EA9792 /* Redemption.swift in Sources */,
 				20816916C91D9182BB4EB92A /* SectionHeader.swift in Sources */,
 				F5ED564808A003CB3CA5F270 /* SeedData.swift in Sources */,
+				F9EC4287DE1F123DC9EDC5AA /* SetPointsSheet.swift in Sources */,
 				49B68843099DAABA7F32BA07 /* SheetScaffold.swift in Sources */,
 				BCD6A9AD7916A2E07F910967 /* ShopFilter.swift in Sources */,
 				D6650CA05CA20FF5E833051C /* ShopManageView.swift in Sources */,

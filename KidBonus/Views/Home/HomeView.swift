@@ -10,12 +10,14 @@ struct HomeView: View {
     /// 点「加分 / 扣分」按钮只列对应的一类，且需要在弹层里选孩子。
     private enum QuickPick: Identifiable {
         case kid(String)
+        case setPoints(String)
         case add
         case deduct
 
         var id: String {
             switch self {
             case .kid(let uuid): return uuid
+            case .setPoints(let uuid): return "set-\(uuid)"
             case .add:  return "add"
             case .deduct: return "deduct"
             }
@@ -29,7 +31,7 @@ struct HomeView: View {
                     VStack(alignment: .leading, spacing: Spacing.s2) {
                         Text("今天，\n两个小家伙的积分")
                             .font(.kami(.body, size: 28))
-                        Text("点一下孩子的卡片，开始加减分。")
+                        Text("点卡片记分，点积分数可直接改总分。")
                             .font(.kami(.body, size: 14))
                             .foregroundStyle(Color.kami.muted)
                     }
@@ -48,6 +50,8 @@ struct HomeView: View {
                                 bonusActive: streak(for: kid) >= 7
                             ) {
                                 quickPick = .kid(kid.id.uuidString)
+                            } onSetPoints: {
+                                quickPick = .setPoints(kid.id.uuidString)
                             }
                         }
                     }
@@ -72,9 +76,16 @@ struct HomeView: View {
         }
         .sheet(item: $quickPick) { target in
             switch target {
-            case .kid(let uuid): KidQuickPickSheet(kidID: UUID(uuidString: uuid), kind: nil)
-            case .add:           KidQuickPickSheet(kidID: nil, kind: .add)
-            case .deduct:        KidQuickPickSheet(kidID: nil, kind: .deduct)
+            case .kid(let uuid):
+                KidQuickPickSheet(kidID: UUID(uuidString: uuid), kind: nil)
+            case .setPoints(let uuid):
+                if let kid = kids.first(where: { $0.id.uuidString == uuid }) {
+                    SetPointsSheet(kid: kid)
+                }
+            case .add:
+                KidQuickPickSheet(kidID: nil, kind: .add)
+            case .deduct:
+                KidQuickPickSheet(kidID: nil, kind: .deduct)
             }
         }
     }

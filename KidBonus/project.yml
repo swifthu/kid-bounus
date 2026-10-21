@@ -20,6 +20,7 @@ targets:
       - path: Models
       - path: Theme
       - path: Store
+      - path: Resources/Assets.xcassets
       - path: Resources/Fonts/LXGWWenKai-Regular.ttf
       - path: Resources/Fonts/LXGWWenKai-Light.ttf
       - path: Resources/Fonts/OFL.txt

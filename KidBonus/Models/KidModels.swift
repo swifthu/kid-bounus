@@ -21,7 +21,7 @@ enum ProductCategory: String, Codable, CaseIterable, Identifiable {
 }
 
 enum SourceKind: String, Codable {
-    case preset, freeform, streakBonus, redemption
+    case preset, freeform, streakBonus, redemption, adjust
 }
 
 enum DateKey {
