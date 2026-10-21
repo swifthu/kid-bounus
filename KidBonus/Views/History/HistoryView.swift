@@ -7,18 +7,16 @@ struct HistoryView: View {
     @Environment(\.modelContext) private var ctx
     @Environment(ToastCenter.self) private var toast
     @State private var filter: String = "all"
+    @State private var anchorDate: Date = Calendar.current.startOfDay(for: .now)
+    @State private var dateRange: HistoryDateRange = .month
+    @State private var showCalendar = false
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: Spacing.s5) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("历程").font(.kami(.body, size: 28))
-                        Text("按天分组，最近 30 天。")
-                            .font(.kami(.body, size: 14))
-                            .foregroundStyle(Color.kami.muted)
-                    }
-                    .padding(.horizontal, Spacing.s4)
+                    Text("历程").font(.kami(.body, size: 28))
+                        .padding(.horizontal, Spacing.s4)
 
                     HStack(spacing: Spacing.s2) {
                         chip("全部", id: "all")
@@ -26,10 +24,14 @@ struct HistoryView: View {
                     }
                     .padding(.horizontal, Spacing.s4)
 
+                    dateFilter
+                        .padding(.horizontal, Spacing.s4)
+
                     let selectedKidID = filter == "all" ? nil : UUID(uuidString: filter)
-                    let filtered = HistoryGrouping.filter(all.entries, kidID: selectedKidID)
+                    let filtered = HistoryGrouping.filter(all.entries, kidID: selectedKidID,
+                                                         dateRange: dateRange, anchor: anchorDate)
                     if filtered.isEmpty {
-                        Text("还没有记录，去加减分页记一笔吧。")
+                        Text(emptyText)
                             .font(.kami(.body, size: 12))
                             .foregroundStyle(Color.kami.meta)
                             .padding()
@@ -62,8 +64,94 @@ struct HistoryView: View {
         }
     }
 
-    private func chip(_ text: String, id: String) -> some View {
-        Button { filter = id } label: {
+    /// 折叠时是一行摘要，展开后是日历加三个区间按钮。
+    private var dateFilter: some View {
+        VStack(spacing: Spacing.s3) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) { showCalendar.toggle() }
+            } label: {
+                HStack(spacing: Spacing.s2) {
+                    Image(systemName: "calendar")
+                        .foregroundStyle(Color.kami.accent)
+                    Text("日期筛选").font(.kami(.body, size: 14))
+                    Spacer()
+                    Text(rangeSummary)
+                        .font(.kami(.body, size: 12))
+                        .foregroundStyle(Color.kami.meta)
+                    Image(systemName: showCalendar ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 12))
+                        .foregroundStyle(Color.kami.meta)
+                }
+                .padding(Spacing.s3)
+                .background(Color.kami.surface)
+                .clipShape(RoundedRectangle(cornerRadius: Radius.md))
+                .overlay(
+                    RoundedRectangle(cornerRadius: Radius.md)
+                        .stroke(Color.kami.border, lineWidth: 1)
+                )
+            }
+            .buttonStyle(.plain)
+
+            if showCalendar {
+                VStack(spacing: Spacing.s3) {
+                    DatePicker("日期", selection: $anchorDate, displayedComponents: .date)
+                        .datePickerStyle(.graphical)
+                        .labelsHidden()
+                        // 系统日历跟随系统语言，这里固定成中文，和页面上其它日期一致
+                        .environment(\.locale, Locale(identifier: "zh_CN"))
+                        .onChange(of: anchorDate) { _, _ in
+                            // 在日历上直接点某一天，就先切到「当天」
+                            dateRange = .day
+                        }
+
+                    HStack(spacing: Spacing.s2) {
+                        ForEach(HistoryDateRange.allCases) { r in
+                            rangeChip(r)
+                        }
+                    }
+                }
+                .padding(Spacing.s3)
+                .background(Color.kami.surface)
+                .clipShape(RoundedRectangle(cornerRadius: Radius.md))
+                .overlay(
+                    RoundedRectangle(cornerRadius: Radius.md)
+                        .stroke(Color.kami.border, lineWidth: 1)
+                )
+            }
+        }
+    }
+
+    private var rangeSummary: String {
+        let w = dateRange.window(anchor: anchorDate)
+        if dateRange == .day {
+            return HistoryGrouping.shortDate(w.end)
+        }
+        return "\(HistoryGrouping.shortDate(w.start)) - \(HistoryGrouping.shortDate(w.end))"
+    }
+
+    /// 全部时间都没有记录，和「这段时间没有记录」要分开说。
+    private var emptyText: String {
+        all.isEmpty ? "还没有记录，去加减分页记一笔吧。" : "这段时间没有记录，换个日期看看。"
+    }
+
+    /// 当天 / 近7天 / 近30天 三个区间按钮
+    private func rangeChip(_ r: HistoryDateRange) -> some View {
+        Button { dateRange = r } label: {
+            Text(r.label)
+                .font(.kami(.body, size: 14))
+                .frame(maxWidth: .infinity, minHeight: 40)
+                .background(dateRange == r ? Color.kami.surface : Color.kami.surfaceWarm)
+                .foregroundStyle(dateRange == r ? Color.kami.accent : Color.kami.muted)
+                .clipShape(RoundedRectangle(cornerRadius: Radius.md))
+                .overlay(
+                    RoundedRectangle(cornerRadius: Radius.md)
+                        .stroke(dateRange == r ? Color.kami.accent : Color.kami.border, lineWidth: 1)
+                )
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func chip(_ text: String, id: String) -> some View {        Button { filter = id } label: {
             Text(text)
                 .font(.kami(.body, size: 14))
                 .frame(maxWidth: .infinity, minHeight: 40)

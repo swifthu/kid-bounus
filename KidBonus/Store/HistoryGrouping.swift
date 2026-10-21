@@ -31,6 +31,19 @@ enum HistoryGrouping {
         return entries.filter { $0.kidID == kidID }
     }
 
+    /// 再按日期窗口筛一次：anchor 所在的那一天 / 近 7 天 / 近 30 天。
+    static func filter(_ entries: [HistoryEntry], kidID: UUID?,
+                       dateRange: HistoryDateRange, anchor: Date) -> [HistoryEntry] {
+        filter(entries, kidID: kidID).filter { dateRange.contains($0.timestamp, anchor: anchor) }
+    }
+
+    /// 区间端点的短日期，如 8月21日。
+    static func shortDate(_ key: String) -> String {
+        let parts = key.split(separator: "-").compactMap { Int($0) }
+        guard parts.count == 3 else { return key }
+        return "\(parts[1])月\(parts[2])日"
+    }
+
     static func timeText(_ date: Date) -> String {
         let f = DateFormatter()
         f.dateFormat = "HH:mm"

@@ -352,6 +352,46 @@ final class FlowUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["还没有记录，去加减分页记一笔吧。"].waitForExistence(timeout: 5))
     }
 
+    /// 日期筛选控件：可展开折叠，展开后有当天/近7天/近30天三个按钮。
+    func test历程日期筛选可展开折叠() {
+        goToTab("历程")
+
+        let toggle = button(startingWith: "日期筛选")
+        XCTAssertTrue(toggle.waitForExistence(timeout: 5), "应有日期筛选入口")
+        XCTAssertFalse(app.buttons["近7天"].exists, "默认折叠时不显示区间按钮")
+
+        toggle.tap()
+        XCTAssertTrue(app.buttons["当天"].waitForExistence(timeout: 5), "展开后应出现区间按钮")
+        XCTAssertTrue(app.buttons["近7天"].exists)
+        XCTAssertTrue(app.buttons["近30天"].exists)
+
+        app.buttons["近7天"].tap()
+        toggle.tap()
+        XCTAssertFalse(app.buttons["近7天"].exists, "收起后区间按钮应隐藏")
+    }
+
+    /// 标题里不再有「按天分组，最近 30 天」那行说明。
+    func test历程页不再有旧副标题() {
+        goToTab("历程")
+        XCTAssertTrue(app.staticTexts["历程"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.staticTexts["按天分组，最近 30 天。"].exists)
+    }
+
+    /// 切到「当天」后，今天的记录还在；切到别的日期就没有记录了。
+    func test历程按当天筛选() {
+        goToTab("加减")
+        button(startingWith: "完成作业").tap()
+        sleep(1)
+
+        goToTab("历程")
+        XCTAssertTrue(app.staticTexts["完成作业"].waitForExistence(timeout: 5))
+
+        button(startingWith: "日期筛选").tap()
+        app.buttons["当天"].tap()
+        XCTAssertTrue(app.staticTexts["完成作业"].waitForExistence(timeout: 5),
+                      "今天的记录应在当天区间内")
+    }
+
     func test加分后历程出现记录与今天分组() {
         goToTab("加减")
         button(startingWith: "完成作业").tap()
