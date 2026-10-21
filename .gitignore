@@ -9,6 +9,8 @@
 *.xcodeproj/xcuserdata/
 *.xcodeproj/project.xcworkspace/xcuserdata/
 *.xcworkspace/xcuserdata/
+# 工程在子目录时上面的规则匹配不到，用 ** 兜住任意层级
+**/xcuserdata/
 build/
 DerivedData/
 
