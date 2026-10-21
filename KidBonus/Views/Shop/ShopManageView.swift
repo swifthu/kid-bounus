@@ -76,19 +76,24 @@ struct ShopManageView: View {
 
     private func row(_ p: Product) -> some View {
         HStack(spacing: Spacing.s3) {
-            Image(systemName: p.iconName ?? "gift")
-                .font(.system(size: 18))
-                .foregroundStyle(Color.kami.accent)
-                .frame(width: 36, height: 36)
-                .background(Color.kami.tagBgSoft)
-                .clipShape(RoundedRectangle(cornerRadius: Radius.sm))
-            VStack(alignment: .leading, spacing: 2) {
-                Text(p.name).font(.kami(.body, size: 13))
-                Text("\(p.category.label) · \(p.desc)")
-                    .font(.kami(.body, size: 11))
-                    .foregroundStyle(Color.kami.meta)
-                    .lineLimit(1)
+            Button { editor = .edit(p) } label: {
+                HStack(spacing: Spacing.s3) {
+                    Image(systemName: p.iconName ?? "gift")
+                        .font(.system(size: 18))
+                        .foregroundStyle(Color.kami.accent)
+                        .frame(width: 36, height: 36)
+                        .background(Color.kami.tagBgSoft)
+                        .clipShape(RoundedRectangle(cornerRadius: Radius.sm))
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(p.name).font(.kami(.body, size: 13))
+                        Text("\(p.category.label) · \(p.desc)")
+                            .font(.kami(.body, size: 11))
+                            .foregroundStyle(Color.kami.meta)
+                            .lineLimit(1)
+                    }
+                }
             }
+            .buttonStyle(.plain)
             Spacer()
             Text("\(p.cost) 分")
                 .font(.kami(.body, size: 14))

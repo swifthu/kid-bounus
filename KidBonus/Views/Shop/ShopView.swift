@@ -3,7 +3,8 @@ import SwiftData
 
 struct ShopView: View {
     @Query private var products: [Product]
-    @Query private var kids: [Kid]
+    // 按名字排序：不排序的话 @Query 的顺序不稳定，两个孩子会换位置
+    @Query(sort: \Kid.name) private var kids: [Kid]
     @Query(sort: \Redemption.timestamp, order: .reverse) private var redemptions: [Redemption]
     @State private var cat: ProductCategory? = nil
     @State private var pending: Product? = nil

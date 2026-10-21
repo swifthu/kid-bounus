@@ -44,6 +44,17 @@ final class FlowUITests: XCTestCase {
         XCTFail("键盘没有弹出，无法输入")
     }
 
+    /// 清空字段再输入：光标落在哪里不确定，退格清空最稳。
+    /// 退格用输入字符的方式（键盘上的 delete 键在弹层里可能被顶到屏幕外，点不到）。
+    private func retype(_ field: XCUIElement, _ text: String) {
+        focus(field)
+        let current = (field.value as? String) ?? ""
+        if !current.isEmpty {
+            field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: current.count))
+        }
+        field.typeText(text)
+    }
+
     // MARK: 种子数据
 
     func test启动显示两个孩子种子数据() {
@@ -97,15 +108,14 @@ final class FlowUITests: XCTestCase {
         sleep(1)
 
         goToTab("首页")
-        // 大积分数：小明的 5 分
-        app.staticTexts["5"].firstMatch.tap()
+        // 大积分数：第一个孩子（小明）的那块
+        let points = app.buttons["kid.points"].firstMatch
+        XCTAssertTrue(points.waitForExistence(timeout: 5), "首页应有大积分数可点")
+        points.tap()
 
         XCTAssertTrue(app.buttons["保存"].waitForExistence(timeout: 5), "应弹出设定积分弹层")
-        // 弹层标题和说明会被合并成一个无障碍元素，用包含匹配
-        let title = app.staticTexts.containing(
-            NSPredicate(format: "label CONTAINS %@", "设定小明的积分")
-        ).firstMatch
-        XCTAssertTrue(title.exists, "弹层标题应指明是给谁设定积分")
+        XCTAssertTrue(app.staticTexts["设定小明的积分"].waitForExistence(timeout: 5),
+                      "弹层标题应指明是给谁设定积分")
 
         let field = app.textFields.firstMatch
         XCTAssertTrue(field.waitForExistence(timeout: 5))
@@ -205,7 +215,7 @@ final class FlowUITests: XCTestCase {
 
         app.buttons["保存"].tap()
 
-        XCTAssertTrue(app.staticTexts["bonusitem"].waitForExistence(timeout: 5),
+        XCTAssertTrue(app.buttons["bonusitem"].waitForExistence(timeout: 5),
                       "新增的加分项应出现在「我的」列表")
     }
 
@@ -218,6 +228,56 @@ final class FlowUITests: XCTestCase {
         app.buttons["保存"].tap()
         XCTAssertTrue(app.staticTexts["请填名称"].waitForExistence(timeout: 5),
                       "空标题应给出校验提示")
+    }
+
+    /// 「我的」页点积分项：打开新增同款弹层，预填原有内容，改完保存。
+    func test我的页积分项可编辑() {
+        goToTab("我的")
+        // 列表里点「完成作业」这一项（标题本身可点，进了编辑弹层）
+        let title = app.buttons["完成作业"]
+        XCTAssertTrue(title.waitForExistence(timeout: 5))
+        title.tap()
+
+        XCTAssertTrue(app.buttons["保存"].waitForExistence(timeout: 5), "应打开编辑弹层")
+        let sheetTitle = app.staticTexts.containing(
+            NSPredicate(format: "label CONTAINS %@", "编辑加分项")
+        ).firstMatch
+        XCTAssertTrue(sheetTitle.waitForExistence(timeout: 5), "标题应是「编辑加分项」")
+
+        // 预填：名称和分值都在
+        let fields = app.textFields
+        XCTAssertTrue(fields.element(boundBy: 0).waitForExistence(timeout: 5))
+        XCTAssertEqual(fields.element(boundBy: 0).value as? String, "完成作业")
+        XCTAssertEqual(fields.element(boundBy: 1).value as? String, "5")
+
+        // 改名字
+        retype(fields.element(boundBy: 0), "改名作业")
+        app.buttons["保存"].tap()
+
+        XCTAssertTrue(app.buttons["改名作业"].waitForExistence(timeout: 5),
+                      "列表应显示新名字")
+    }
+
+    /// 商城管理页点商品名：打开新增同款弹层，预填原有内容。
+    func test商城管理页商品可编辑() {
+        goToTab("商城")
+        app.buttons["shop.manage"].tap()
+        XCTAssertTrue(app.staticTexts["乐高积木"].waitForExistence(timeout: 5))
+
+        app.staticTexts["乐高积木"].tap()
+
+        XCTAssertTrue(app.buttons["保存"].waitForExistence(timeout: 5), "应打开编辑弹层")
+        let fields = app.textFields
+        XCTAssertTrue(fields.element(boundBy: 0).waitForExistence(timeout: 5))
+        XCTAssertEqual(fields.element(boundBy: 0).value as? String, "乐高积木")
+        XCTAssertEqual(fields.element(boundBy: 1).value as? String, "200")
+
+        // 改名字（数字键盘没有可用的退格键，名称用普通键盘改）
+        retype(fields.element(boundBy: 0), "新积木")
+        app.buttons["保存"].tap()
+
+        XCTAssertTrue(app.staticTexts["新积木"].waitForExistence(timeout: 5),
+                      "列表应显示改后的名字")
     }
 
     // MARK: D4：顶栏 person 按钮此前是空实现
@@ -329,7 +389,7 @@ final class FlowUITests: XCTestCase {
         fields.element(boundBy: 1).typeText("7")
         app.buttons["保存"].tap()
 
-        XCTAssertTrue(app.staticTexts["kidonly"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["kidonly"].waitForExistence(timeout: 5))
         XCTAssertEqual(app.staticTexts["item.owner.kidonly"].label, "小红",
                        "选了小红的项应归属于小红")
 

@@ -2,7 +2,8 @@ import SwiftUI
 import SwiftData
 
 struct StatsView: View {
-    @Query private var kids: [Kid]
+    // 按名字排序：不排序的话 @Query 的顺序不稳定，两个孩子会换位置
+    @Query(sort: \Kid.name) private var kids: [Kid]
     @AppStorage("currentKidID") private var currentKidID: String = ""
 
     var body: some View {

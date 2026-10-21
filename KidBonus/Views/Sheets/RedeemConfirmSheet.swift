@@ -4,7 +4,8 @@ import SwiftData
 struct RedeemConfirmSheet: View {
     let product: Product
     let onClose: () -> Void
-    @Query private var kids: [Kid]
+    // 按名字排序：不排序的话 @Query 的顺序不稳定，两个孩子会换位置
+    @Query(sort: \Kid.name) private var kids: [Kid]
     @Environment(\.modelContext) private var ctx
     @Environment(ToastCenter.self) private var toast
     @AppStorage("currentKidID") private var currentKidID: String = ""

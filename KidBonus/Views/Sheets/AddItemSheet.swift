@@ -3,7 +3,10 @@ import SwiftData
 
 struct AddItemSheet: View {
     let kind: Kind
-    @Query private var kids: [Kid]
+    /// 传 nil 是新增；传已有项目就是编辑，界面一样但预填原有内容
+    let item: PointItem?
+    // 按名字排序：不排序的话 @Query 的顺序不稳定，两个孩子会换位置
+    @Query(sort: \Kid.name) private var kids: [Kid]
     @Environment(\.modelContext) private var ctx
     @Environment(\.dismiss) private var dismiss
     @Environment(ToastCenter.self) private var toast
@@ -12,10 +15,16 @@ struct AddItemSheet: View {
     @State private var title: String = ""
     @State private var deltaText: String = ""
     @State private var desc: String = ""
+    @State private var loaded = false
+
+    private var isEditing: Bool { item != nil }
+
+    /// 编辑时以项目自身的加减分种类为准，避免和列表里的分类对不上。
+    private var effectiveKind: Kind { item?.kind ?? kind }
 
     var body: some View {
         SheetScaffold(
-            title: "新增\(kind == .add ? "加分" : "扣分")项",
+            title: "\(isEditing ? "编辑" : "新增")\(effectiveKind == .add ? "加分" : "扣分")项",
             actions: [
                 SheetAction(title: "取消", primary: false) { dismiss() },
                 SheetAction(title: "保存", primary: true) { save() }
@@ -27,6 +36,7 @@ struct AddItemSheet: View {
             Field(text: $deltaText, placeholder: "分值（整数）", keyboard: .numberPad)
             Field(text: $desc, placeholder: "一句说明（可选）")
         }
+        .onAppear(perform: loadIfNeeded)
     }
 
     struct Scope: Identifiable {
@@ -93,11 +103,22 @@ struct AddItemSheet: View {
         effectiveTag == ItemFilter.allKidsTag ? nil : UUID(uuidString: effectiveTag)
     }
 
+    /// 只在弹层出现时回填一次，避免用户输入后被 @Query 刷新覆盖。
+    private func loadIfNeeded() {
+        guard !loaded else { return }
+        loaded = true
+        guard let item else { return }
+        title = item.title
+        deltaText = "\(item.delta)"
+        desc = item.desc
+        scopeTag = item.kidID?.uuidString ?? ItemFilter.allKidsTag
+    }
+
     private func save() {
         let draft: ItemDraft
         do {
             draft = try ItemValidator.validate(
-                kind: kind, kidID: selectedKidID,
+                kind: effectiveKind, kidID: selectedKidID,
                 title: title, deltaText: deltaText, descText: desc
             )
         } catch {
@@ -109,15 +130,21 @@ struct AddItemSheet: View {
             toast.show(.danger, title: message)
             return
         }
-        let item = PointItem(
-            kind: kind, title: draft.title, delta: draft.delta,
-            iconName: ItemValidator.defaultIconName(for: kind),
-            desc: draft.desc, kidID: draft.kidID
-        )
-        ctx.insert(item)
+        if let item {
+            item.title = draft.title
+            item.delta = draft.delta
+            item.desc = draft.desc
+            item.kidID = draft.kidID
+        } else {
+            ctx.insert(PointItem(
+                kind: kind, title: draft.title, delta: draft.delta,
+                iconName: ItemValidator.defaultIconName(for: kind),
+                desc: draft.desc, kidID: draft.kidID
+            ))
+        }
         try? ctx.save()
         let owner = draft.kidID.flatMap { id in kids.first { $0.id == id }?.name } ?? "通用"
-        toast.show(.success, title: "已新增「\(draft.title)」",
+        toast.show(.success, title: "\(isEditing ? "已更新" : "已新增")「\(draft.title)」",
                    body: "\(draft.delta > 0 ? "+" : "")\(draft.delta) 分 · \(owner)")
         dismiss()
     }

@@ -39,6 +39,7 @@ struct KidCard: View {
                 }
             }
             .buttonStyle(.plain)
+            .accessibilityIdentifier("kid.points")
 
             Button(action: onTap) {
                 HStack(spacing: Spacing.s4) {

@@ -2,7 +2,8 @@ import SwiftUI
 import SwiftData
 
 struct HomeView: View {
-    @Query private var kids: [Kid]
+    // 按名字排序：不排序的话 @Query 的顺序不稳定，两个孩子会换位置
+    @Query(sort: \Kid.name) private var kids: [Kid]
     @Environment(\.modelContext) private var ctx
     @State private var quickPick: QuickPick? = nil
 

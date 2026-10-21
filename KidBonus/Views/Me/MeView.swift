@@ -2,12 +2,26 @@ import SwiftUI
 import SwiftData
 
 struct MeView: View {
-    @Query private var kids: [Kid]
+    // 按名字排序：不排序的话 @Query 的顺序不稳定，两个孩子会换位置
+    @Query(sort: \Kid.name) private var kids: [Kid]
     @Query private var allItems: [PointItem]
     @Environment(\.modelContext) private var ctx
     @Environment(ToastCenter.self) private var toast
-    @State private var showAddItem: Kind?
+    @State private var itemSheet: ItemSheet?
     @State private var showReset = false
+
+    /// 新增和编辑共用一个弹层：编辑时传已有项目，界面预填内容。
+    private enum ItemSheet: Identifiable {
+        case add(Kind)
+        case edit(PointItem)
+
+        var id: String {
+            switch self {
+            case .add(let kind): return "add-\(kind.rawValue)"
+            case .edit(let item): return "edit-\(item.id.uuidString)"
+            }
+        }
+    }
 
     private var adds: [PointItem] { allItems.filter { $0.kind == .add } }
     private var deds: [PointItem] { allItems.filter { $0.kind == .deduct } }
@@ -51,7 +65,7 @@ struct MeView: View {
 
                     section("02", "加分项") {
                         ForEach(adds) { it in editRow(it) }
-                        Button { showAddItem = .add } label: {
+                        Button { itemSheet = .add(.add) } label: {
                             HStack {
                                 Image(systemName: "plus")
                                 Text("增加加分项")
@@ -65,7 +79,7 @@ struct MeView: View {
 
                     section("03", "扣分项") {
                         ForEach(deds) { it in editRow(it) }
-                        Button { showAddItem = .deduct } label: {
+                        Button { itemSheet = .add(.deduct) } label: {
                             HStack {
                                 Image(systemName: "minus")
                                 Text("增加扣分项")
@@ -105,10 +119,12 @@ struct MeView: View {
             }
             .background(Color.kami.bg)
         }
-        .sheet(item: $showAddItem) { kind in
-            AddItemSheet(kind: kind)
-        }
-        .confirmationDialog("重置全部数据？此操作不可撤销。",
+        .sheet(item: $itemSheet) { target in
+            switch target {
+            case .add(let kind): AddItemSheet(kind: kind, item: nil)
+            case .edit(let item): AddItemSheet(kind: item.kind, item: item)
+            }
+        }        .confirmationDialog("重置全部数据？此操作不可撤销。",
                             isPresented: $showReset,
                             titleVisibility: .visible) {
             Button("重置", role: .destructive) {
@@ -136,21 +152,34 @@ struct MeView: View {
         return kid.name
     }
 
+    /// 点列表里的项目：打开编辑弹层，预填原有内容
+    private func edit(_ it: PointItem) {
+        itemSheet = .edit(it)
+    }
+
     private func editRow(_ it: PointItem) -> some View {
-        HStack {
-            Text(it.title).font(.kami(.body, size: 13))
+        HStack(spacing: Spacing.s2) {
+            Button { edit(it) } label: {
+                Text(it.title).font(.kami(.body, size: 13))
+            }
+            .buttonStyle(.plain)
             Spacer()
             Tag(text: ownerName(it.kidID), kind: .faint)
                 .accessibilityIdentifier("item.owner.\(it.title)")
             Text("\(it.delta > 0 ? "+" : "")\(it.delta)")
                 .font(.kami(.body, size: 14))
                 .foregroundStyle(it.delta > 0 ? Color.kami.success : Color.kami.danger)
+            Button { edit(it) } label: {
+                Image(systemName: "pencil").foregroundStyle(Color.kami.muted)
+            }
+            .buttonStyle(.plain)
             Button(role: .destructive) {
                 ctx.delete(it)
                 try? ctx.save()
             } label: {
                 Image(systemName: "trash").foregroundStyle(Color.kami.danger)
             }
+            .buttonStyle(.plain)
         }
         .padding(.horizontal, Spacing.s3)
         .padding(.vertical, Spacing.s2)
