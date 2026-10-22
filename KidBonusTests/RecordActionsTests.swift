@@ -69,6 +69,34 @@ final class RecordActionsTests: XCTestCase {
         XCTAssertEqual(item.usageCount, 1, "撤销后次数要加回来")
     }
 
+    /// 删掉今天的记录，连续天数要跟着退，删掉的那天不该再算数。
+    func test删除记录后连续天数跟着回退() throws {
+        let kid = makeKid()
+        let item = PointItem(kind: .add, title: "完成作业", delta: 5, desc: "测试项")
+        ctx.insert(item)
+
+        // 昨天和今天各记一次，这个项目的连续天数是 2
+        let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: .now)!
+        ctx.insert(HistoryRecord(kid: kid, title: "完成作业", delta: 5, timestamp: yesterday,
+                                 sourceKind: .preset, sourceId: item.id.uuidString))
+        let today = HistoryRecord(kid: kid, title: "完成作业", delta: 5,
+                                  sourceKind: .preset, sourceId: item.id.uuidString)
+        ctx.insert(today)
+        ctx.insert(Streak(kidID: kid.id, itemID: item.id, count: 2, lastDateKey: DateKey.today))
+        try ctx.save()
+
+        let toast = ToastCenter()
+        RecordActions.deleteRecord(today, ctx: ctx, toast: toast)
+
+        XCTAssertEqual(StreakEngine.currentStreak(kidID: kid.id, itemID: item.id, ctx: ctx)?.count, 1,
+                       "删掉今天的记录后，连续天数应退回昨天为止的 1 天")
+
+        let action = try XCTUnwrap(toast.current?.action)
+        action.handler()
+        XCTAssertEqual(StreakEngine.currentStreak(kidID: kid.id, itemID: item.id, ctx: ctx)?.count, 2,
+                       "撤销后连续天数要回到 2 天")
+    }
+
     func test撤销兑换后商品记录和分数都回来() throws {
         let kid = makeKid()
         ctx.insert(HistoryRecord(kid: kid, title: "攒分", delta: 100, sourceKind: .preset))

@@ -205,24 +205,22 @@ struct MeView: View {
         itemSheet = .edit(it)
     }
 
-    /// 一条 bonus 规则：左边说明文字，右边开关 + 编辑 + 删除。
+    /// 一条 bonus 规则：规则挂在某个加分项上，
+    /// 「在这个项目上连续 N 天」就额外奖励 M 分。
     private func ruleRow(_ r: BonusRule) -> some View {
         HStack(spacing: Spacing.s2) {
             Button { ruleSheet = .edit(r) } label: {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("连续 \(r.days) 天")
+                    Text(itemTitle(for: r))
                         .font(.kami(.body, size: 13))
-                    Text(r.enabled ? "已启用" : "已停用")
+                    Text("连续 \(r.days) 天 · \(r.enabled ? "+\(r.points) 分" : "已停用")")
                         .font(.kami(.body, size: 11))
-                        .foregroundStyle(Color.kami.meta)
+                        .foregroundStyle(r.enabled ? Color.kami.warn : Color.kami.meta)
                 }
             }
             .buttonStyle(.plain)
             .accessibilityIdentifier("rule.\(r.days)")
             Spacer()
-            Text("+\(r.points) 分")
-                .font(.kami(.body, size: 14))
-                .foregroundStyle(Color.kami.warn)
             Toggle("启用这条规则", isOn: Binding(
                 get: { r.enabled },
                 set: { v in r.enabled = v; try? ctx.save() }
@@ -236,7 +234,8 @@ struct MeView: View {
             Button(role: .destructive) {
                 ctx.delete(r)
                 try? ctx.save()
-                toast.show(.success, title: "已删除规则", body: "连续 \(r.days) 天 +\(r.points) 分")
+                toast.show(.success, title: "已删除规则",
+                           body: "\(itemTitle(for: r)) 连续 \(r.days) 天 +\(r.points) 分")
             } label: {
                 Image(systemName: "trash").foregroundStyle(Color.kami.danger)
             }
@@ -249,6 +248,29 @@ struct MeView: View {
         .overlay(
             RoundedRectangle(cornerRadius: Radius.md).stroke(Color.kami.border, lineWidth: 1)
         )
+    }
+
+    /// 规则对应的加分项名字。项目被删了的话说明一下。
+    private func itemTitle(for r: BonusRule) -> String {
+        guard let itemID = r.itemID,
+              let item = allItems.first(where: { $0.id == itemID }) else { return "（项目已删除）" }
+        return item.title
+    }
+
+    /// 删掉加分项时，连带删掉挂在它上面的奖励规则和连续天数，
+    /// 免得留下指向不存在项目的规则。
+    private func removeItem(_ it: PointItem) {
+        let rules = (try? ctx.fetch(FetchDescriptor<BonusRule>())) ?? []
+        for rule in rules where rule.itemID == it.id {
+            ctx.delete(rule)
+        }
+        let streaks = (try? ctx.fetch(FetchDescriptor<Streak>())) ?? []
+        for streak in streaks where streak.itemID == it.id {
+            ctx.delete(streak)
+        }
+        ctx.delete(it)
+        try? ctx.save()
+        toast.show(.success, title: "已删除「\(it.title)」")
     }
 
     private func editRow(_ it: PointItem) -> some View {
@@ -268,8 +290,7 @@ struct MeView: View {
             }
             .buttonStyle(.plain)
             Button(role: .destructive) {
-                ctx.delete(it)
-                try? ctx.save()
+                removeItem(it)
             } label: {
                 Image(systemName: "trash").foregroundStyle(Color.kami.danger)
             }

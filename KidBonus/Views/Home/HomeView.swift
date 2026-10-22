@@ -50,7 +50,8 @@ struct HomeView: View {
                                 kid: kid,
                                 points: PointMath.kidPoints(kid),
                                 today: PointMath.todayDelta(kid),
-                                streak: streak(for: kid),
+                                streak: streak(for: kid).days,
+                                streakLabel: streakLabel(for: kid),
                                 bonusActive: bonusActive(for: kid),
                                 bonusLabel: bonusLabel(for: kid),
                                 recentItems: recentItems(for: kid)
@@ -98,22 +99,39 @@ struct HomeView: View {
         }
     }
 
-    private func streak(for kid: Kid) -> Int {
-        StreakEngine.currentStreak(kidID: kid.id, ctx: ctx)?.count ?? 0
+    /// 连续天数按「孩子 + 项目」分别算，这里取当前最长的一次。
+    /// 只看今天或昨天还在做的项目，断了很久的不再显示。
+    private func streak(for kid: Kid) -> (days: Int, itemID: UUID?) {
+        StreakEngine.bestLiveStreak(kidID: kid.id, ctx: ctx)
     }
 
-    /// 最短的那条启用规则决定 bonus 什么时候解锁，规则是用户自己定的，不能写死 7 天。
-    private var firstRuleDays: Int? {
-        rules.first(where: { $0.enabled && $0.days > 0 })?.days
+    /// 连续天数属于哪个项目，文字里带出来，让人知道在坚持什么。
+    private func streakLabel(for kid: Kid) -> String {
+        let info = streak(for: kid)
+        guard let itemID = info.itemID,
+              let item = allItems.first(where: { $0.id == itemID }) else { return "连续天数" }
+        return "连续·\(shorten(item.title))"
     }
 
+    /// 名字太长会把三栏挤坏，截断一下。
+    private func shorten(_ title: String) -> String {
+        title.count > 5 ? String(title.prefix(5)) + "…" : title
+    }
+
+    /// 有没有哪条规则已经达标：某个项目的连续天数够了。
     private func bonusActive(for kid: Kid) -> Bool {
-        guard let days = firstRuleDays else { return false }
-        return streak(for: kid) >= days
+        for rule in rules where rule.enabled && rule.days > 0 {
+            guard let itemID = rule.itemID else { continue }
+            guard let s = StreakEngine.currentStreak(kidID: kid.id, itemID: itemID, ctx: ctx) else { continue }
+            if s.count >= rule.days && StreakEngine.isLive(s.lastDateKey) { return true }
+        }
+        return false
     }
 
     private func bonusLabel(for kid: Kid) -> String {
-        guard firstRuleDays != nil else { return "未设规则" }
+        guard rules.contains(where: { $0.enabled && $0.days > 0 && $0.itemID != nil }) else {
+            return "未设规则"
+        }
         return bonusActive(for: kid) ? "bonus 激活" : "bonus 待解锁"
     }
 

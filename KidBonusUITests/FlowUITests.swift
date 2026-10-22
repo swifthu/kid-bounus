@@ -554,7 +554,7 @@ final class FlowUITests: XCTestCase {
 
     // MARK: bonus 规则
 
-    /// 「我的」页可以自定义 bonus 规则：连续几天发多少分。
+    /// 「我的」页可以自定义 bonus 规则：在某个项目上连续几天发多少分。
     func test我的页可新增bonus规则() {
         goToTab("我的")
         button(startingWith: "增加规则").tap()
@@ -569,9 +569,37 @@ final class FlowUITests: XCTestCase {
 
         app.buttons["保存"].tap()
 
-        XCTAssertTrue(app.staticTexts["连续 3 天"].waitForExistence(timeout: 5),
+        XCTAssertTrue(app.staticTexts["连续 3 天 · +15 分"].waitForExistence(timeout: 5),
                       "新规则应出现在列表里")
-        XCTAssertTrue(app.staticTexts["+15 分"].exists, "应显示奖励分数")
+    }
+
+    /// 规则是挂在某个加分项上的：换一个项目，同一个周期可以再有一条规则。
+    func test同一项目同一周期不能建两条规则() {
+        goToTab("我的")
+        button(startingWith: "增加规则").tap()
+        XCTAssertTrue(app.buttons["保存"].waitForExistence(timeout: 5))
+
+        let fields = app.textFields
+        fields.element(boundBy: 0).tap()
+        fields.element(boundBy: 0).typeText("3")
+        fields.element(boundBy: 1).tap()
+        fields.element(boundBy: 1).typeText("15")
+        app.buttons["保存"].tap()
+        XCTAssertTrue(app.staticTexts["连续 3 天 · +15 分"].waitForExistence(timeout: 5))
+
+        // 再建一条同样周期的规则，应该被拦下来
+        button(startingWith: "增加规则").tap()
+        let fields2 = app.textFields
+        fields2.element(boundBy: 0).tap()
+        fields2.element(boundBy: 0).typeText("3")
+        fields2.element(boundBy: 1).tap()
+        fields2.element(boundBy: 1).typeText("9")
+        app.buttons["保存"].tap()
+
+        let toast = app.staticTexts.containing(
+            NSPredicate(format: "label CONTAINS %@", "已经有连续 3 天的规则了")
+        ).firstMatch
+        XCTAssertTrue(toast.waitForExistence(timeout: 5), "同一项目同一周期应被拦下")
     }
 
     // MARK: 首页常用项

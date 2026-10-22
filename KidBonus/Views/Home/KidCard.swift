@@ -5,7 +5,10 @@ struct KidCard: View {
     let kid: Kid
     let points: Int
     let today: Int
+    /// 当前最长的一次「连续坚持」有多少天
     let streak: Int
+    /// 连续天数属于哪个项目，文字里带出来
+    let streakLabel: String
     let bonusActive: Bool
     /// bonus 状态的说明文字，随规则和孩子而变
     let bonusLabel: String
@@ -52,7 +55,7 @@ struct KidCard: View {
                     statBlock(value: "\(today >= 0 ? "+" : "")\(today)",
                                label: "今日",
                                color: today >= 0 ? Color.kami.success : Color.kami.danger)
-                    statBlock(value: "\(streak)", label: "连续天数")
+                    statBlock(value: "\(streak)", label: streakLabel)
                     statBlock(value: bonusActive ? "★" : "·",
                                label: bonusLabel,
                                color: bonusActive ? Color.kami.warn : Color.kami.muted)

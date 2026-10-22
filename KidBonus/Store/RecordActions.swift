@@ -28,7 +28,7 @@ enum RecordActions {
             Task { @MainActor in
                 try? await Task.sleep(nanoseconds: 700_000_000)
                 toast.show(.success, title: "\(kid.name) · Streak bonus!",
-                           body: "连续 \(outcome.streakCount) 天 · +\(outcome.streakBonus) 分")
+                           body: "\(item.title) 连续 \(outcome.streakCount) 天 · +\(outcome.streakBonus) 分")
             }
         }
     }

@@ -31,8 +31,6 @@ final class PointFlowTests: XCTestCase {
         let ctx = container.mainContext
         let kid = Kid(name: "小明", age: 8, colorHex: "#1B365D")
         ctx.insert(kid)
-        // 连续奖励由规则决定，先写好默认规则
-        SeedData.defaultRules().forEach(ctx.insert)
         try ctx.save()
         return (ctx, kid)
     }
@@ -75,22 +73,37 @@ final class PointFlowTests: XCTestCase {
 
     func test加分建立连续天数() throws {
         let (ctx, kid) = try makeEnv()
+        let item = addItem("完成作业", 5)
 
-        let outcome = RecordStore.recordItem(addItem("完成作业", 5), on: kid, ctx: ctx)
+        let outcome = RecordStore.recordItem(item, on: kid, ctx: ctx)
 
         XCTAssertEqual(outcome.streakCount, 1)
         XCTAssertEqual(outcome.streakBonus, 0)
-        XCTAssertEqual(StreakEngine.currentStreak(kidID: kid.id, ctx: ctx)?.count, 1)
+        XCTAssertEqual(StreakEngine.currentStreak(kidID: kid.id, itemID: item.id, ctx: ctx)?.count, 1)
     }
 
     func test同日多次加分连续天数只推进一次() throws {
         let (ctx, kid) = try makeEnv()
+        let item = addItem("完成作业", 5)
 
-        _ = RecordStore.recordItem(addItem("完成作业", 5), on: kid, ctx: ctx)
-        let second = RecordStore.recordItem(addItem("帮忙家务", 3), on: kid, ctx: ctx)
+        _ = RecordStore.recordItem(item, on: kid, ctx: ctx)
+        let second = RecordStore.recordItem(item, on: kid, ctx: ctx)
 
         XCTAssertEqual(second.streakCount, 1, "同一天重复加分不应把连续天数推到 2")
-        XCTAssertEqual(second.points, 8)
+        XCTAssertEqual(second.points, 10)
+    }
+
+    /// 连续天数按项目分别算：做了别的项目，不会把这一项的连续天数带上去。
+    func test不同项目的连续天数各算各的() throws {
+        let (ctx, kid) = try makeEnv()
+        let homework = addItem("完成作业", 5)
+        let reading = addItem("阅读 30 分", 5)
+
+        _ = RecordStore.recordItem(homework, on: kid, ctx: ctx)
+        let second = RecordStore.recordItem(reading, on: kid, ctx: ctx)
+
+        XCTAssertEqual(second.streakCount, 1, "阅读是另一个项目，从第 1 天开始")
+        XCTAssertEqual(StreakEngine.currentStreak(kidID: kid.id, itemID: homework.id, ctx: ctx)?.count, 1)
     }
 
     // MARK: - 扣分
@@ -109,23 +122,26 @@ final class PointFlowTests: XCTestCase {
 
     func test扣分不影响连续天数() throws {
         let (ctx, kid) = try makeEnv()
-        _ = RecordStore.recordItem(addItem("完成作业", 5), on: kid, ctx: ctx)
+        let good = addItem("完成作业", 5)
+        _ = RecordStore.recordItem(good, on: kid, ctx: ctx)
 
-        let outcome = RecordStore.recordItem(addItem("挑食", -2), on: kid, ctx: ctx)
+        let bad = addItem("挑食", -2)
+        let outcome = RecordStore.recordItem(bad, on: kid, ctx: ctx)
 
         XCTAssertEqual(outcome.streakCount, 0, "扣分不应推进连续天数")
-        XCTAssertEqual(StreakEngine.currentStreak(kidID: kid.id, ctx: ctx)?.count, 1,
+        XCTAssertEqual(StreakEngine.currentStreak(kidID: kid.id, itemID: good.id, ctx: ctx)?.count, 1,
                        "连续天数应停留在加分那天的 1")
     }
 
     func test只扣不加不会建立连续天数() throws {
         let (ctx, kid) = try makeEnv()
+        let bad = addItem("赖床迟到", -3)
 
-        let outcome = RecordStore.recordItem(addItem("赖床迟到", -3), on: kid, ctx: ctx)
+        let outcome = RecordStore.recordItem(bad, on: kid, ctx: ctx)
 
         XCTAssertEqual(outcome.points, -3)
-        XCTAssertNil(StreakEngine.currentStreak(kidID: kid.id, ctx: ctx),
-                     "没有任何加分时不应产生 streak 记录")
+        XCTAssertNil(StreakEngine.currentStreak(kidID: kid.id, itemID: bad.id, ctx: ctx),
+                     "扣分不该产生 streak 记录")
     }
 
     func test扣分可以让积分变成负数() throws {
@@ -234,23 +250,29 @@ final class PointFlowTests: XCTestCase {
         XCTAssertEqual(PointMath.todayDelta(kid), 30, "今日明细只统计加减分，不含兑换")
     }
 
-    func test自定义加分同样推进连续天数() throws {
+    /// 自由记录没有对应的项目，不该推进任何项目的连续天数。
+    func test自定义加分不推进连续天数() throws {
         let (ctx, kid) = try makeEnv()
 
         let outcome = RecordStore.recordFreeform(title: "主动帮忙", delta: 4, on: kid, ctx: ctx)
 
         XCTAssertEqual(outcome.points, 4)
-        XCTAssertEqual(outcome.streakCount, 1)
+        XCTAssertEqual(outcome.streakCount, 0, "自由记录没有对应项目，不推进连续天数")
         XCTAssertEqual(kid.history.first?.sourceKind, .freeform)
     }
 
     func test连续第七天触发奖励并计入积分() throws {
         let (ctx, kid) = try makeEnv()
-        let seeded = Streak(kidID: kid.id, count: 6, lastDateKey: DateKey.day(before: 1))
+        let item = addItem("完成作业", 5)
+        ctx.insert(item)
+        // 规则挂在这一项上：连续 7 天做「完成作业」就奖励 20 分
+        ctx.insert(BonusRule(itemID: item.id, days: 7, points: 20))
+        let seeded = Streak(kidID: kid.id, itemID: item.id, count: 6,
+                            lastDateKey: DateKey.day(before: 1))
         ctx.insert(seeded)
         try ctx.save()
 
-        let outcome = RecordStore.recordItem(addItem("完成作业", 5), on: kid, ctx: ctx)
+        let outcome = RecordStore.recordItem(item, on: kid, ctx: ctx)
 
         XCTAssertEqual(outcome.streakCount, 7)
         XCTAssertEqual(outcome.streakBonus, 20)

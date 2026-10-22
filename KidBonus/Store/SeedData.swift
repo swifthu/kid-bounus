@@ -12,25 +12,42 @@ enum SeedData {
         } else {
             // 老版本没有奖励规则时补上默认的，避免升级后一直发不出 bonus
             installRulesIfMissing(ctx: ctx)
+            // 旧版本的连续天数是不分项目的，已经没有意义，清掉
+            cleanupLegacyStreaks(ctx: ctx)
         }
     }
 
-    /// 没有规则时写入默认的「每 7 天 +20 / 每 30 天 +100」。
+    /// 删掉旧版本留下的「不分项目」的连续天数记录。
+    static func cleanupLegacyStreaks(ctx: ModelContext) {
+        let streaks = (try? ctx.fetch(FetchDescriptor<Streak>())) ?? []
+        let legacy = streaks.filter { $0.itemID == nil }
+        guard !legacy.isEmpty else { return }
+        legacy.forEach(ctx.delete)
+        try? ctx.save()
+    }
+
+    /// 没有规则时写入默认的几条。规则挂在具体项目上：
+    /// 「每天刷牙」坚持一周给奖励，「每天运动」坚持一个月给奖励。
     /// 只在第一次装：用户删光规则后，这一行不能再把默认规则塞回去。
     static func installRulesIfMissing(ctx: ModelContext) {
         let count = (try? ctx.fetchCount(FetchDescriptor<BonusRule>())) ?? 0
         guard count == 0 else { return }
         guard !UserDefaults.standard.bool(forKey: rulesSeededKey) else { return }
         UserDefaults.standard.set(true, forKey: rulesSeededKey)
-        defaultRules().forEach(ctx.insert)
+        let items = (try? ctx.fetch(FetchDescriptor<PointItem>())) ?? []
+        defaultRules(for: items).forEach(ctx.insert)
         try? ctx.save()
     }
 
-    static func defaultRules() -> [BonusRule] {
-        [
-            BonusRule(days: 7, points: 20),
-            BonusRule(days: 30, points: 100)
-        ]
+    /// 默认规则：连续天数和奖励分值都跟着项目走。
+    /// 找不到对应项目就不生成这条规则（比如用户把「刷牙早晚」删了）。
+    static func defaultRules(for items: [PointItem]) -> [BonusRule] {
+        let brush = items.first { $0.title == "刷牙早晚" }
+        let sport = items.first { $0.title == "运动 30 分" }
+        var rules: [BonusRule] = []
+        if let brush { rules.append(BonusRule(itemID: brush.id, days: 7, points: 10)) }
+        if let sport { rules.append(BonusRule(itemID: sport.id, days: 30, points: 50)) }
+        return rules
     }
 
     static func installFresh(ctx: ModelContext) {
@@ -84,8 +101,8 @@ enum SeedData {
         ]
         products.forEach(ctx.insert)
 
-        // Bonus rules
-        defaultRules().forEach(ctx.insert)
+        // Bonus rules：规则挂在具体项目上
+        defaultRules(for: adds).forEach(ctx.insert)
         // 重置后规则回到默认，也算「已经装过」，之后不该再自动补规则
         UserDefaults.standard.set(true, forKey: rulesSeededKey)
 

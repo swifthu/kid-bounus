@@ -15,8 +15,6 @@ final class L2BoundaryTests: XCTestCase {
             for: schema,
             configurations: ModelConfiguration(isStoredInMemoryOnly: true)
         )
-        // 奖励由规则决定，先写好默认规则
-        SeedData.defaultRules().forEach(container.mainContext.insert)
     }
 
     override func tearDown() {
@@ -69,47 +67,64 @@ final class L2BoundaryTests: XCTestCase {
     }
 
     // MARK: StreakEngine 边界
+    // 连续天数按「孩子 + 加分项」分别统计，规则也挂在具体项目上。
+
+    /// 建一个加分项，规则和连续天数都挂在它上面。
+    private func makeItem(_ title: String = "完成作业") -> PointItem {
+        let item = PointItem(kind: .add, title: title, delta: 5, desc: "测试项")
+        ctx.insert(item)
+        return item
+    }
 
     func test第八天不再发奖() {
         let k = makeKid()
-        ctx.insert(Streak(kidID: k.id, count: 7, lastDateKey: DateKey.day(before: 1)))
-        let r = StreakEngine.bump(kidID: k.id, ctx: ctx)
+        let item = makeItem()
+        ctx.insert(BonusRule(itemID: item.id, days: 7, points: 20))
+        ctx.insert(Streak(kidID: k.id, itemID: item.id, count: 7, lastDateKey: DateKey.day(before: 1)))
+        let r = StreakEngine.bump(kidID: k.id, itemID: item.id, ctx: ctx)
         XCTAssertEqual(r.count, 8)
         XCTAssertTrue(r.awards.isEmpty, "第 8 天不是 7 的整数倍，不该发奖")
     }
 
     func test第三十一天不再发奖() {
         let k = makeKid()
-        ctx.insert(Streak(kidID: k.id, count: 30, lastDateKey: DateKey.day(before: 1)))
-        let r = StreakEngine.bump(kidID: k.id, ctx: ctx)
+        let item = makeItem()
+        ctx.insert(BonusRule(itemID: item.id, days: 30, points: 100))
+        ctx.insert(Streak(kidID: k.id, itemID: item.id, count: 30, lastDateKey: DateKey.day(before: 1)))
+        let r = StreakEngine.bump(kidID: k.id, itemID: item.id, ctx: ctx)
         XCTAssertEqual(r.count, 31)
         XCTAssertTrue(r.awards.isEmpty)
     }
 
     func test断签后从1重新开始() {
         let k = makeKid()
-        ctx.insert(Streak(kidID: k.id, count: 9, lastDateKey: DateKey.day(before: 5)))
-        let r = StreakEngine.bump(kidID: k.id, ctx: ctx)
+        let item = makeItem()
+        ctx.insert(Streak(kidID: k.id, itemID: item.id, count: 9, lastDateKey: DateKey.day(before: 5)))
+        let r = StreakEngine.bump(kidID: k.id, itemID: item.id, ctx: ctx)
         XCTAssertEqual(r.count, 1)
         XCTAssertTrue(r.awards.isEmpty)
     }
 
     func test断签后重新攒到第七天再次发奖() {
         let k = makeKid()
+        let item = makeItem()
+        ctx.insert(BonusRule(itemID: item.id, days: 7, points: 20))
         // 上次断在第 3 天，两天前开始重新累计，昨天是新的第 1 天，今天应为第 2 天
-        ctx.insert(Streak(kidID: k.id, count: 1, lastDateKey: DateKey.day(before: 1)))
-        let r = StreakEngine.bump(kidID: k.id, ctx: ctx)
+        ctx.insert(Streak(kidID: k.id, itemID: item.id, count: 1, lastDateKey: DateKey.day(before: 1)))
+        let r = StreakEngine.bump(kidID: k.id, itemID: item.id, ctx: ctx)
         XCTAssertEqual(r.count, 2)
         XCTAssertTrue(r.awards.isEmpty)
     }
 
-    func test连续三十天只发一次百元奖励() {
+    func test连续三十天只发一次奖励() {
         let k = makeKid()
-        ctx.insert(Streak(kidID: k.id, count: 29, lastDateKey: DateKey.day(before: 1)))
-        let first = StreakEngine.bump(kidID: k.id, ctx: ctx)
+        let item = makeItem()
+        ctx.insert(BonusRule(itemID: item.id, days: 30, points: 100))
+        ctx.insert(Streak(kidID: k.id, itemID: item.id, count: 29, lastDateKey: DateKey.day(before: 1)))
+        let first = StreakEngine.bump(kidID: k.id, itemID: item.id, ctx: ctx)
         XCTAssertEqual(first.count, 30)
         XCTAssertEqual(first.awards, [StreakAward(days: 30, points: 100)])
-        let second = StreakEngine.bump(kidID: k.id, ctx: ctx)
+        let second = StreakEngine.bump(kidID: k.id, itemID: item.id, ctx: ctx)
         XCTAssertEqual(second.count, 30, "同一天重复 bump 不应递增")
         XCTAssertTrue(second.awards.isEmpty)
     }
@@ -118,10 +133,13 @@ final class L2BoundaryTests: XCTestCase {
         let a = makeKid()
         let b = Kid(name: "小红", age: 10, colorHex: "#4A6B3A")
         ctx.insert(b)
-        ctx.insert(Streak(kidID: a.id, count: 6, lastDateKey: DateKey.day(before: 1)))
-        ctx.insert(Streak(kidID: b.id, count: 3, lastDateKey: DateKey.day(before: 1)))
-        XCTAssertEqual(StreakEngine.bump(kidID: a.id, ctx: ctx).awards, [StreakAward(days: 7, points: 20)])
-        XCTAssertTrue(StreakEngine.bump(kidID: b.id, ctx: ctx).awards.isEmpty)
+        let item = makeItem()
+        ctx.insert(BonusRule(itemID: item.id, days: 7, points: 20))
+        ctx.insert(Streak(kidID: a.id, itemID: item.id, count: 6, lastDateKey: DateKey.day(before: 1)))
+        ctx.insert(Streak(kidID: b.id, itemID: item.id, count: 3, lastDateKey: DateKey.day(before: 1)))
+        XCTAssertEqual(StreakEngine.bump(kidID: a.id, itemID: item.id, ctx: ctx).awards,
+                       [StreakAward(days: 7, points: 20)])
+        XCTAssertTrue(StreakEngine.bump(kidID: b.id, itemID: item.id, ctx: ctx).awards.isEmpty)
     }
 
     // MARK: TrendBuilder 边界

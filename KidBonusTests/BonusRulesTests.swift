@@ -25,40 +25,64 @@ final class BonusRulesTests: XCTestCase {
     private var ctx: ModelContext { container.mainContext }
 
     // MARK: 规则匹配
+    // 规则挂在具体加分项上：连续天数按项目分别算，规则也只对它指定的项目生效。
+
+    private func makeItem(_ title: String = "完成作业") -> PointItem {
+        let item = PointItem(kind: .add, title: title, delta: 5, desc: "测试项")
+        ctx.insert(item)
+        return item
+    }
 
     func test没有规则时不发奖() {
-        XCTAssertTrue(BonusRules.awards(for: 7, ctx: ctx).isEmpty)
+        let item = makeItem()
+        XCTAssertTrue(BonusRules.awards(for: 7, itemID: item.id, ctx: ctx).isEmpty)
     }
 
     func test连续天数是规则倍数时发奖() {
-        ctx.insert(BonusRule(days: 5, points: 30))
-        XCTAssertEqual(BonusRules.awards(for: 5, ctx: ctx), [StreakAward(days: 5, points: 30)])
-        XCTAssertEqual(BonusRules.awards(for: 10, ctx: ctx), [StreakAward(days: 5, points: 30)])
-        XCTAssertTrue(BonusRules.awards(for: 6, ctx: ctx).isEmpty)
+        let item = makeItem()
+        ctx.insert(BonusRule(itemID: item.id, days: 5, points: 30))
+        XCTAssertEqual(BonusRules.awards(for: 5, itemID: item.id, ctx: ctx),
+                       [StreakAward(days: 5, points: 30)])
+        XCTAssertEqual(BonusRules.awards(for: 10, itemID: item.id, ctx: ctx),
+                       [StreakAward(days: 5, points: 30)])
+        XCTAssertTrue(BonusRules.awards(for: 6, itemID: item.id, ctx: ctx).isEmpty)
+    }
+
+    /// 别的项目的规则不该在这个项目上发奖。
+    func test规则只对指定的项目生效() {
+        let brush = makeItem("刷牙早晚")
+        let read = makeItem("阅读 30 分")
+        ctx.insert(BonusRule(itemID: brush.id, days: 5, points: 30))
+        XCTAssertTrue(BonusRules.awards(for: 5, itemID: read.id, ctx: ctx).isEmpty)
+        XCTAssertEqual(BonusRules.awards(for: 5, itemID: brush.id, ctx: ctx).count, 1)
     }
 
     func test停用的规则不发奖() {
-        ctx.insert(BonusRule(days: 5, points: 30, enabled: false))
-        XCTAssertTrue(BonusRules.awards(for: 5, ctx: ctx).isEmpty)
+        let item = makeItem()
+        ctx.insert(BonusRule(itemID: item.id, days: 5, points: 30, enabled: false))
+        XCTAssertTrue(BonusRules.awards(for: 5, itemID: item.id, ctx: ctx).isEmpty)
     }
 
     func test多条规则同时命中时都发() {
-        ctx.insert(BonusRule(days: 3, points: 10))
-        ctx.insert(BonusRule(days: 6, points: 20))
-        let awards = BonusRules.awards(for: 6, ctx: ctx)
+        let item = makeItem()
+        ctx.insert(BonusRule(itemID: item.id, days: 3, points: 10))
+        ctx.insert(BonusRule(itemID: item.id, days: 6, points: 20))
+        let awards = BonusRules.awards(for: 6, itemID: item.id, ctx: ctx)
         XCTAssertEqual(awards, [StreakAward(days: 3, points: 10), StreakAward(days: 6, points: 20)],
                        "按天数从少到多排")
     }
 
     func test连续天数为0时不发奖() {
-        ctx.insert(BonusRule(days: 1, points: 5))
-        XCTAssertTrue(BonusRules.awards(for: 0, ctx: ctx).isEmpty)
+        let item = makeItem()
+        ctx.insert(BonusRule(itemID: item.id, days: 1, points: 5))
+        XCTAssertTrue(BonusRules.awards(for: 0, itemID: item.id, ctx: ctx).isEmpty)
     }
 
     func test启用中的规则按天数排序() {
-        ctx.insert(BonusRule(days: 30, points: 100))
-        ctx.insert(BonusRule(days: 7, points: 20))
-        ctx.insert(BonusRule(days: 14, points: 50, enabled: false))
+        let item = makeItem()
+        ctx.insert(BonusRule(itemID: item.id, days: 30, points: 100))
+        ctx.insert(BonusRule(itemID: item.id, days: 7, points: 20))
+        ctx.insert(BonusRule(itemID: item.id, days: 14, points: 50, enabled: false))
         let active = BonusRules.active(ctx: ctx)
         XCTAssertEqual(active.map(\.days), [7, 30], "停用的规则不参与排序")
     }
@@ -105,12 +129,16 @@ final class BonusRulesTests: XCTestCase {
 
     // MARK: 重复周期
 
-    func test同一周期不能有两条规则() {
-        let rule = BonusRule(days: 7, points: 20)
+    func test同一项目的同一周期不能有两条规则() {
+        let item = makeItem()
+        let other = makeItem("阅读 30 分")
+        let rule = BonusRule(itemID: item.id, days: 7, points: 20)
         ctx.insert(rule)
-        XCTAssertTrue(BonusRules.hasRule(days: 7, excluding: nil, ctx: ctx))
-        XCTAssertFalse(BonusRules.hasRule(days: 7, excluding: rule.id, ctx: ctx),
+        XCTAssertTrue(BonusRules.hasRule(days: 7, itemID: item.id, excluding: nil, ctx: ctx))
+        XCTAssertFalse(BonusRules.hasRule(days: 7, itemID: item.id, excluding: rule.id, ctx: ctx),
                        "编辑自己不算重复")
-        XCTAssertFalse(BonusRules.hasRule(days: 14, excluding: nil, ctx: ctx))
+        XCTAssertFalse(BonusRules.hasRule(days: 14, itemID: item.id, excluding: nil, ctx: ctx))
+        XCTAssertFalse(BonusRules.hasRule(days: 7, itemID: other.id, excluding: nil, ctx: ctx),
+                       "别的项目可以各有各的规则")
     }
 }

@@ -68,6 +68,29 @@ final class SeedDataTests: XCTestCase {
         }
     }
 
+    /// 旧版本留下的「不分项目」的连续天数已经没有意义，升级后要清掉。
+    @MainActor
+    func test旧的不分项目的连续天数会被清掉() throws {
+        UserDefaults.standard.removeObject(forKey: SeedData.rulesSeededKey)
+        defer { UserDefaults.standard.removeObject(forKey: SeedData.rulesSeededKey) }
+
+        let schema = Schema([Kid.self, PointItem.self, Product.self, BonusRule.self,
+                             HistoryRecord.self, Redemption.self, Streak.self])
+        let cfg = ModelConfiguration(isStoredInMemoryOnly: true)
+        let container = try ModelContainer(for: schema, configurations: cfg)
+        let ctx = container.mainContext
+
+        let kid = Kid(name: "小明", age: 8, colorHex: "#1B365D")
+        ctx.insert(kid)
+        ctx.insert(Streak(kidID: kid.id, count: 5, lastDateKey: DateKey.today))
+        try ctx.save()
+
+        SeedData.installIfEmpty(ctx: ctx)
+
+        let streaks = try ctx.fetch(FetchDescriptor<Streak>())
+        XCTAssertTrue(streaks.isEmpty, "旧的不分项目的连续天数应被清掉")
+    }
+
     /// 用户在「我的」里把规则删光后，重启不该又把默认规则塞回来。
     @MainActor
     func test规则被删光后不会被自动塞回() throws {
