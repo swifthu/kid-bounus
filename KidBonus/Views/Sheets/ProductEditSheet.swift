@@ -10,7 +10,7 @@ struct ProductEditSheet: View {
     @State private var name: String = ""
     @State private var costText: String = ""
     @State private var category: ProductCategory = .toy
-    @State private var iconText: String = ""
+    @State private var iconName: String = "gift"
     @State private var desc: String = ""
     @State private var loaded = false
 
@@ -21,7 +21,8 @@ struct ProductEditSheet: View {
             actions: [
                 SheetAction(title: "取消", primary: false) { dismiss() },
                 SheetAction(title: "保存", primary: true) { save() }
-            ]
+            ],
+            detents: [.large]
         ) {
             Field(text: $name, placeholder: "商品名称，如：乐高积木")
             Field(text: $costText, placeholder: "所需分数（整数）", keyboard: .numberPad)
@@ -42,7 +43,7 @@ struct ProductEditSheet: View {
                     .stroke(Color.kami.border, lineWidth: 1)
             )
 
-            Field(text: $iconText, placeholder: "SF Symbol 名（可选）")
+            IconPicker(selection: $iconName)
             Field(text: $desc, placeholder: "一句说明（可选）")
         }
         .onAppear(perform: loadIfNeeded)
@@ -56,7 +57,7 @@ struct ProductEditSheet: View {
         name = product.name
         costText = "\(product.cost)"
         category = product.category
-        iconText = product.iconName ?? ""
+        iconName = product.iconName ?? "gift"
         desc = product.desc
     }
 
@@ -65,7 +66,7 @@ struct ProductEditSheet: View {
         do {
             draft = try ProductValidator.validate(
                 name: name, costText: costText, category: category,
-                iconText: iconText, descText: desc
+                iconText: iconName, descText: desc
             )
         } catch {
             let message: String

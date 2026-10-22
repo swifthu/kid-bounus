@@ -22,7 +22,7 @@ final class PointFlowTests: XCTestCase {
     }
 
     private func makeEnv() throws -> (ModelContext, Kid) {
-        let schema = Schema([Kid.self, PointItem.self, Product.self,
+        let schema = Schema([Kid.self, PointItem.self, Product.self, BonusRule.self,
                              HistoryRecord.self, Redemption.self, Streak.self])
         container = try ModelContainer(
             for: schema,
@@ -31,6 +31,8 @@ final class PointFlowTests: XCTestCase {
         let ctx = container.mainContext
         let kid = Kid(name: "小明", age: 8, colorHex: "#1B365D")
         ctx.insert(kid)
+        // 连续奖励由规则决定，先写好默认规则
+        SeedData.defaultRules().forEach(ctx.insert)
         try ctx.save()
         return (ctx, kid)
     }
@@ -263,7 +265,7 @@ final class PointFlowTests: XCTestCase {
 
     /// 用真实种子数据跑一遍「攒分 → 兑换」的完整路径。
     func test真实种子数据下攒分可兑换便宜商品() throws {
-        let schema = Schema([Kid.self, PointItem.self, Product.self,
+        let schema = Schema([Kid.self, PointItem.self, Product.self, BonusRule.self,
                              HistoryRecord.self, Redemption.self, Streak.self])
         container = try ModelContainer(
             for: schema,

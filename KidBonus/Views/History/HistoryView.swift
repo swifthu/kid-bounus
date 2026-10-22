@@ -3,6 +3,7 @@ import SwiftData
 
 struct HistoryView: View {
     @Query(sort: \HistoryRecord.timestamp, order: .reverse) private var all: [HistoryRecord]
+    @Query(sort: \Redemption.timestamp, order: .reverse) private var redemptions: [Redemption]
     // 按名字排序：不排序的话 @Query 的顺序不稳定，两个孩子会换位置
     @Query(sort: \Kid.name) private var kids: [Kid]
     @Environment(\.modelContext) private var ctx
@@ -29,7 +30,7 @@ struct HistoryView: View {
                         .padding(.horizontal, Spacing.s4)
 
                     let selectedKidID = filter == "all" ? nil : UUID(uuidString: filter)
-                    let filtered = HistoryGrouping.filter(all.entries, kidID: selectedKidID,
+                    let filtered = HistoryGrouping.filter(timeline, kidID: selectedKidID,
                                                          dateRange: dateRange, anchor: anchorDate)
                     if filtered.isEmpty {
                         Text(emptyText)
@@ -130,9 +131,19 @@ struct HistoryView: View {
         return "\(HistoryGrouping.shortDate(w.start)) - \(HistoryGrouping.shortDate(w.end))"
     }
 
+    /// 加分记录和兑换记录合成一条时间线。
+    private var timeline: [HistoryEntry] {
+        var entries = all.entries
+        entries += redemptions.map { r in
+            HistoryEntry(id: r.id, title: r.productName, delta: -r.cost,
+                         timestamp: r.timestamp, kidID: r.kid?.id, sourceKind: .redemption)
+        }
+        return entries.sorted { $0.timestamp > $1.timestamp }
+    }
+
     /// 全部时间都没有记录，和「这段时间没有记录」要分开说。
     private var emptyText: String {
-        all.isEmpty ? "还没有记录，去加减分页记一笔吧。" : "这段时间没有记录，换个日期看看。"
+        timeline.isEmpty ? "还没有记录，去加减分页记一笔吧。" : "这段时间没有记录，换个日期看看。"
     }
 
     /// 当天 / 近7天 / 近30天 三个区间按钮
@@ -194,14 +205,14 @@ struct HistoryView: View {
     /// 行首图标按来源和正负区分，和加减分页的积分项图标同一套画法。
     private func iconStyle(for h: HistoryEntry) -> (name: String, fg: Color, bg: Color) {
         switch h.sourceKind {
-        case .streakBonus: return ("flame.fill", .kami.warn, Color(hex: 0xEFE7D3))
+        case .streakBonus: return ("flame.fill", .kami.warn, Color.kami.warnBg)
         case .freeform:    return ("pencil", .kami.muted, .kami.tagBgFaint)
         case .redemption:  return ("gift", .kami.accent, .kami.tagBgSoft)
         case .adjust:      return ("slider.horizontal.3", .kami.accent, .kami.tagBgSoft)
         case .preset:
             return h.delta > 0
                 ? ("checkmark", .kami.accent, .kami.tagBgSoft)
-                : ("exclamationmark", .kami.danger, Color(hex: 0xEFE2DF))
+                : ("exclamationmark", .kami.danger, Color.kami.dangerBg)
         }
     }
 
@@ -209,65 +220,20 @@ struct HistoryView: View {
         kids.first { $0.id == id }?.name ?? ""
     }
 
-    /// 删除一条记录：积分是历史与兑换的汇总值，删掉即回调，这里只提示回调了多少。
+    /// 删除一条记录：积分是历史与兑换的汇总值，删掉即回调，toast 里可以撤销。
     private func delete(_ h: HistoryEntry) {
+        if h.sourceKind == .redemption {
+            guard let r = redemptions.first(where: { $0.id == h.id }) else {
+                toast.show(.danger, title: "这条兑换已经不在了")
+                return
+            }
+            RecordActions.deleteRedemption(r, ctx: ctx, toast: toast)
+            return
+        }
         guard let record = all.first(where: { $0.id == h.id }) else {
             toast.show(.danger, title: "这条记录已经不在了")
             return
         }
-        let who = kidName(for: h.kidID)
-        let points = RecordStore.deleteRecord(record, ctx: ctx)
-        toast.show(.success, title: "已删除「\(h.title)」",
-                   body: "回调 \(abs(h.delta)) 分 · \(who)当前 \(points) 分")
-    }
-}
-
-/// 右滑露出删除按钮。列表是 ScrollView + VStack 而不是 List，
-/// 系统 swipeActions 在这里不生效，只能自己实现。
-private struct SwipeToDelete<Content: View>: View {
-    let onDelete: () -> Void
-    @ViewBuilder let content: Content
-
-    @State private var isOpen = false
-    @State private var x: CGFloat = 0
-    private let buttonWidth: CGFloat = 84
-
-    var body: some View {
-        ZStack(alignment: .leading) {
-            content
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.kami.bg)
-                .offset(x: x)
-                // simultaneousGesture：与外层 ScrollView 共存，竖向滑动仍能滚动
-                .simultaneousGesture(
-                    DragGesture(minimumDistance: 8)
-                        .onChanged { v in
-                            let base = isOpen ? buttonWidth : 0
-                            x = min(max(base + v.translation.width, 0), buttonWidth)
-                        }
-                        .onEnded { _ in
-                            withAnimation(.spring(response: 0.25, dampingFraction: 0.9)) {
-                                isOpen = x > buttonWidth / 2
-                                x = isOpen ? buttonWidth : 0
-                            }
-                        }
-                )
-
-            // 只在展开时存在：收起时若按钮仍在，内容行会盖住它导致点不动
-            if isOpen {
-                Button {
-                    withAnimation { isOpen = false; x = 0 }
-                    onDelete()
-                } label: {
-                    Text("删除")
-                        .font(.kami(.body, size: 14))
-                        .foregroundStyle(Color.kami.danger)
-                        .frame(width: buttonWidth)
-                        .frame(maxHeight: .infinity)
-                        .background(Color(hex: 0xEFE2DF))
-                }
-                .buttonStyle(.plain)
-            }
-        }
+        RecordActions.deleteRecord(record, ctx: ctx, toast: toast)
     }
 }

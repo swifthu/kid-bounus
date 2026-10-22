@@ -69,7 +69,13 @@ struct ShopView: View {
                             .padding(.horizontal, Spacing.s4)
                     } else {
                         VStack(spacing: Spacing.s2) {
-                            ForEach(redemptions.prefix(10)) { r in redemptionRow(r) }
+                            ForEach(redemptions.prefix(10)) { r in
+                                SwipeToDelete {
+                                    RecordActions.deleteRedemption(r, ctx: ctx, toast: toast)
+                                } content: {
+                                    redemptionRow(r)
+                                }
+                            }
                         }
                         .padding(.horizontal, Spacing.s4)
                     }
@@ -125,6 +131,7 @@ struct ShopView: View {
                 .clipShape(RoundedRectangle(cornerRadius: Radius.sm))
             VStack(alignment: .leading) {
                 Text(r.productName).font(.kami(.body, size: 13))
+                    .accessibilityIdentifier("redemption.\(r.productName)")
                 Text("\(r.kid?.name ?? "") · \(formatDate(r.timestamp))")
                     .font(.kami(.body, size: 11)).foregroundStyle(Color.kami.meta)
             }

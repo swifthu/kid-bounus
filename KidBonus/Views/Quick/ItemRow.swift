@@ -9,7 +9,7 @@ struct ItemRow: View {
             HStack(spacing: Spacing.s3) {
                 ZStack {
                     RoundedRectangle(cornerRadius: Radius.sm)
-                        .fill(item.delta > 0 ? Color.kami.tagBgSoft : Color(hex: 0xEFE2DF))
+                        .fill(item.delta > 0 ? Color.kami.tagBgSoft : Color.kami.dangerBg)
                         .frame(width: 36, height: 36)
                     Image(systemName: item.iconName ?? "circle")
                         .foregroundStyle(item.delta > 0 ? Color.kami.accent : Color.kami.danger)

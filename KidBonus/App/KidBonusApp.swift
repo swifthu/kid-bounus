@@ -3,8 +3,10 @@ import SwiftData
 
 @main
 struct KidBonusApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+
     private let container: ModelContainer = {
-        let schema = Schema([Kid.self, PointItem.self, Product.self,
+        let schema = Schema([Kid.self, PointItem.self, Product.self, BonusRule.self,
                              HistoryRecord.self, Redemption.self, Streak.self])
         // swiftlint:disable:next force_try
         return try! ModelContainer(for: schema)

@@ -4,8 +4,27 @@ import SwiftData
 enum SeedData {
     static func installIfEmpty(ctx: ModelContext) {
         let kids = (try? ctx.fetchCount(FetchDescriptor<Kid>())) ?? 0
-        guard kids == 0 else { return }
-        installFresh(ctx: ctx)
+        if kids == 0 {
+            installFresh(ctx: ctx)
+        } else {
+            // 老版本没有奖励规则时补上默认的，避免升级后一直发不出 bonus
+            installRulesIfMissing(ctx: ctx)
+        }
+    }
+
+    /// 没有规则时写入默认的「每 7 天 +20 / 每 30 天 +100」。
+    static func installRulesIfMissing(ctx: ModelContext) {
+        let count = (try? ctx.fetchCount(FetchDescriptor<BonusRule>())) ?? 0
+        guard count == 0 else { return }
+        defaultRules().forEach(ctx.insert)
+        try? ctx.save()
+    }
+
+    static func defaultRules() -> [BonusRule] {
+        [
+            BonusRule(days: 7, points: 20),
+            BonusRule(days: 30, points: 100)
+        ]
     }
 
     static func installFresh(ctx: ModelContext) {
@@ -13,6 +32,7 @@ enum SeedData {
         deleteAll(of: Kid.self, ctx: ctx)
         deleteAll(of: PointItem.self, ctx: ctx)
         deleteAll(of: Product.self, ctx: ctx)
+        deleteAll(of: BonusRule.self, ctx: ctx)
         deleteAll(of: HistoryRecord.self, ctx: ctx)
         deleteAll(of: Redemption.self, ctx: ctx)
         deleteAll(of: Streak.self, ctx: ctx)
@@ -57,6 +77,9 @@ enum SeedData {
             Product(name: "蛋糕一块",   category: .food, cost:  60, iconName: "birthday.cake", desc: "下午茶蛋糕"),
         ]
         products.forEach(ctx.insert)
+
+        // Bonus rules
+        defaultRules().forEach(ctx.insert)
 
         try? ctx.save()
     }

@@ -9,7 +9,7 @@ final class ShopFilterTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        let schema = Schema([Kid.self, PointItem.self, Product.self,
+        let schema = Schema([Kid.self, PointItem.self, Product.self, BonusRule.self,
                              HistoryRecord.self, Redemption.self, Streak.self])
         container = try! ModelContainer(
             for: schema,

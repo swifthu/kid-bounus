@@ -39,4 +39,28 @@ final class ScreenshotTests: XCTestCase {
             snap("sheet-统计")
         }
     }
+
+    /// 图标选择器和 bonus 规则弹层。
+    func testCaptureNewSheets() {
+        app.tabBars.buttons["我的"].tap()
+        sleep(1)
+
+        let addItem = app.buttons.containing(
+            NSPredicate(format: "label BEGINSWITH %@", "增加加分项")
+        ).firstMatch
+        XCTAssertTrue(addItem.waitForExistence(timeout: 10))
+        addItem.tap()
+        sleep(1)
+        snap("sheet-图标选择")
+        app.buttons["取消"].tap()
+        sleep(1)
+
+        let addRule = app.buttons.containing(
+            NSPredicate(format: "label BEGINSWITH %@", "增加规则")
+        ).firstMatch
+        XCTAssertTrue(addRule.waitForExistence(timeout: 10))
+        addRule.tap()
+        sleep(1)
+        snap("sheet-bonus规则")
+    }
 }

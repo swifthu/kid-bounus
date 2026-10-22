@@ -8,7 +8,8 @@ struct ContentView: View {
     @Environment(\.modelContext) private var ctx
     @State private var toast = ToastCenter()
     @State private var showingStats = false
-    @State private var tab: Int = 0
+    /// tab 放在 router 里，主屏长按图标的快捷操作才能切页
+    @State private var router = AppRouter.shared
 
     var body: some View {
         VStack(spacing: 0) {
@@ -24,7 +25,7 @@ struct ContentView: View {
                         .frame(width: 36, height: 36)
                 }
                 Button {
-                    tab = Self.meTabIndex
+                    router.tab = Self.meTabIndex
                 } label: {
                     Image(systemName: "person")
                         .foregroundStyle(Color.kami.muted)
@@ -37,7 +38,7 @@ struct ContentView: View {
 
             // TabView + toast overlay
             ZStack(alignment: .top) {
-                TabView(selection: $tab) {
+                TabView(selection: $router.tab) {
                     HomeView().tabItem { Label("首页", systemImage: "house") }.tag(0)
                     QuickView().tabItem { Label("加减", systemImage: "plus") }.tag(1)
                     ShopView().tabItem { Label("商城", systemImage: "bag") }.tag(2)
@@ -64,7 +65,7 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
-        .modelContainer(for: [Kid.self, PointItem.self, Product.self,
+        .modelContainer(for: [Kid.self, PointItem.self, Product.self, BonusRule.self,
                               HistoryRecord.self, Redemption.self, Streak.self],
                         inMemory: true)
 }

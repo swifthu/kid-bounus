@@ -9,12 +9,14 @@ final class L2BoundaryTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        let schema = Schema([Kid.self, PointItem.self, Product.self,
+        let schema = Schema([Kid.self, PointItem.self, Product.self, BonusRule.self,
                              HistoryRecord.self, Redemption.self, Streak.self])
         container = try! ModelContainer(
             for: schema,
             configurations: ModelConfiguration(isStoredInMemoryOnly: true)
         )
+        // 奖励由规则决定，先写好默认规则
+        SeedData.defaultRules().forEach(container.mainContext.insert)
     }
 
     override func tearDown() {
@@ -73,7 +75,7 @@ final class L2BoundaryTests: XCTestCase {
         ctx.insert(Streak(kidID: k.id, count: 7, lastDateKey: DateKey.day(before: 1)))
         let r = StreakEngine.bump(kidID: k.id, ctx: ctx)
         XCTAssertEqual(r.count, 8)
-        XCTAssertEqual(r.bonus, 0, "奖励只在第 7 天触发一次")
+        XCTAssertTrue(r.awards.isEmpty, "第 8 天不是 7 的整数倍，不该发奖")
     }
 
     func test第三十一天不再发奖() {
@@ -81,7 +83,7 @@ final class L2BoundaryTests: XCTestCase {
         ctx.insert(Streak(kidID: k.id, count: 30, lastDateKey: DateKey.day(before: 1)))
         let r = StreakEngine.bump(kidID: k.id, ctx: ctx)
         XCTAssertEqual(r.count, 31)
-        XCTAssertEqual(r.bonus, 0)
+        XCTAssertTrue(r.awards.isEmpty)
     }
 
     func test断签后从1重新开始() {
@@ -89,7 +91,7 @@ final class L2BoundaryTests: XCTestCase {
         ctx.insert(Streak(kidID: k.id, count: 9, lastDateKey: DateKey.day(before: 5)))
         let r = StreakEngine.bump(kidID: k.id, ctx: ctx)
         XCTAssertEqual(r.count, 1)
-        XCTAssertEqual(r.bonus, 0)
+        XCTAssertTrue(r.awards.isEmpty)
     }
 
     func test断签后重新攒到第七天再次发奖() {
@@ -98,7 +100,7 @@ final class L2BoundaryTests: XCTestCase {
         ctx.insert(Streak(kidID: k.id, count: 1, lastDateKey: DateKey.day(before: 1)))
         let r = StreakEngine.bump(kidID: k.id, ctx: ctx)
         XCTAssertEqual(r.count, 2)
-        XCTAssertEqual(r.bonus, 0)
+        XCTAssertTrue(r.awards.isEmpty)
     }
 
     func test连续三十天只发一次百元奖励() {
@@ -106,10 +108,10 @@ final class L2BoundaryTests: XCTestCase {
         ctx.insert(Streak(kidID: k.id, count: 29, lastDateKey: DateKey.day(before: 1)))
         let first = StreakEngine.bump(kidID: k.id, ctx: ctx)
         XCTAssertEqual(first.count, 30)
-        XCTAssertEqual(first.bonus, 100)
+        XCTAssertEqual(first.awards, [StreakAward(days: 30, points: 100)])
         let second = StreakEngine.bump(kidID: k.id, ctx: ctx)
         XCTAssertEqual(second.count, 30, "同一天重复 bump 不应递增")
-        XCTAssertEqual(second.bonus, 0)
+        XCTAssertTrue(second.awards.isEmpty)
     }
 
     func test不同孩子的streak互不干扰() {
@@ -118,8 +120,8 @@ final class L2BoundaryTests: XCTestCase {
         ctx.insert(b)
         ctx.insert(Streak(kidID: a.id, count: 6, lastDateKey: DateKey.day(before: 1)))
         ctx.insert(Streak(kidID: b.id, count: 3, lastDateKey: DateKey.day(before: 1)))
-        XCTAssertEqual(StreakEngine.bump(kidID: a.id, ctx: ctx).bonus, 20)
-        XCTAssertEqual(StreakEngine.bump(kidID: b.id, ctx: ctx).bonus, 0)
+        XCTAssertEqual(StreakEngine.bump(kidID: a.id, ctx: ctx).awards, [StreakAward(days: 7, points: 20)])
+        XCTAssertTrue(StreakEngine.bump(kidID: b.id, ctx: ctx).awards.isEmpty)
     }
 
     // MARK: TrendBuilder 边界

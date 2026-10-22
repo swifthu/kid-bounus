@@ -1,19 +1,23 @@
 import Foundation
 import SwiftData
 
-struct StreakUpdate: Equatable { var count: Int; var bonus: Int }
+struct StreakUpdate: Equatable { var count: Int; var awards: [StreakAward] }
+
+/// 一条奖励规则的触发结果。
+struct StreakAward: Equatable {
+    /// 规则的周期天数，如 7 表示「每连续 7 天」
+    let days: Int
+    let points: Int
+}
 
 enum StreakEngine {
-    static let weeklyBonus = 20
-    static let monthlyBonus = 100
-
-    /// 当日首次加分时调用。返回新的 streak count 与触发的 bonus（0 或 20 或 100）。
+    /// 当日首次加分时调用。返回新的 streak count 与触发的奖励列表。
     /// 业务规则：
-    ///   当日已加分 → 不变, bonus = 0
+    ///   当日已加分 → 不变, 不发奖
     ///   lastDate == 昨天 → count + 1
     ///   否则         → count = 1
-    ///   count == 7  → bonus = 20
-    ///   count == 30 → bonus += 100
+    /// 奖励由 BonusRule 决定：连续天数是规则天数的整数倍时发一次，
+    /// 所以 7 天规则会在 7/14/21… 天发，30 天规则会在 30/60… 天发。
     @MainActor
     static func bump(kidID: UUID, ctx: ModelContext) -> StreakUpdate {
         let today = DateKey.today
@@ -22,7 +26,7 @@ enum StreakEngine {
         if streak == nil { ctx.insert(prev) }
 
         if prev.lastDateKey == today {
-            return StreakUpdate(count: prev.count, bonus: 0)
+            return StreakUpdate(count: prev.count, awards: [])
         }
 
         let yesterday = DateKey.day(before: 1)
@@ -33,15 +37,11 @@ enum StreakEngine {
             nextCount = 1
         }
 
-        var bonus = 0
-        if nextCount == 7  { bonus = weeklyBonus }
-        if nextCount == 30 { bonus += monthlyBonus }
-
         prev.count = nextCount
         prev.lastDateKey = today
         try? ctx.save()
 
-        return StreakUpdate(count: nextCount, bonus: bonus)
+        return StreakUpdate(count: nextCount, awards: BonusRules.awards(for: nextCount, ctx: ctx))
     }
 
     @MainActor

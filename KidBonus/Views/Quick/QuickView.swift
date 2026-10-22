@@ -9,6 +9,7 @@ struct QuickView: View {
     @Environment(ToastCenter.self) private var toast
     @AppStorage("currentKidID") private var currentKidID: String = ""
     @State private var showManual = false
+    @State private var router = AppRouter.shared
 
     var body: some View {
         NavigationStack {
@@ -86,6 +87,16 @@ struct QuickView: View {
         .sheet(isPresented: $showManual) {
             ManualRecordSheet()
         }
+        .onAppear { handlePending() }
+        .onChange(of: router.pending) { _, _ in handlePending() }
+    }
+
+    /// 主屏长按图标的「记一笔」：冷启动时请求在视图出现前就写好了，
+    /// 所以 appear 和 change 两条路都要接住。
+    private func handlePending() {
+        guard router.pending == .manual else { return }
+        router.pending = nil
+        showManual = true
     }
 
     /// currentKidID 可能是「重置数据」后遗留的旧 UUID，必须经 KidPicker 回退。
@@ -99,16 +110,7 @@ struct QuickView: View {
 
     private func addOrDeduct(_ item: PointItem) {
         guard let kid = kids.first(where: { $0.id.uuidString == currentKidID }) ?? kids.first else { return }
-        let outcome = RecordStore.recordItem(item, on: kid, ctx: ctx)
-        toast.show(.success, title: "\(kid.name) · \(item.title)",
-                   body: "\(item.delta > 0 ? "+" : "")\(item.delta) 分 · 当前 \(outcome.points) 分")
-        if outcome.streakBonus > 0 {
-            Task { @MainActor in
-                try? await Task.sleep(nanoseconds: 700_000_000)
-                toast.show(.success, title: "\(kid.name) · Streak bonus!",
-                           body: "连续 \(outcome.streakCount) 天 · +\(outcome.streakBonus) 分")
-            }
-        }
+        RecordActions.record(item, on: kid, ctx: ctx, toast: toast)
     }
 }
 

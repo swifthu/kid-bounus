@@ -98,16 +98,7 @@ struct KidQuickPickSheet: View {
             dismiss()
             return
         }
-        let outcome = RecordStore.recordItem(item, on: kid, ctx: ctx)
-        toast.show(.success, title: "\(kid.name) · \(item.title)",
-                   body: "\(item.delta > 0 ? "+" : "")\(item.delta) 分 · 当前 \(outcome.points) 分")
-        if outcome.streakBonus > 0 {
-            Task { @MainActor in
-                try? await Task.sleep(nanoseconds: 700_000_000)
-                toast.show(.success, title: "\(kid.name) · Streak bonus!",
-                           body: "连续 \(outcome.streakCount) 天 · +\(outcome.streakBonus) 分")
-            }
-        }
+        RecordActions.record(item, on: kid, ctx: ctx, toast: toast)
         dismiss()
     }
 }

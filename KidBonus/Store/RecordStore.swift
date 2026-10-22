@@ -6,6 +6,8 @@ enum RecordStore {
         var points: Int
         var streakBonus: Int
         var streakCount: Int
+        /// 触发的奖励明细，用于逐条写进历程
+        var awards: [StreakAward] = []
     }
 
     /// 写一条 history（积分项）。加分时自动触发 streak + bonus。
@@ -19,27 +21,31 @@ enum RecordStore {
             sourceId: item.id.uuidString
         ))
 
-        var bonus = 0
+        // 用了几次，首页按它排「最近常用」
+        item.usageCount += 1
+
+        var awards: [StreakAward] = []
         var streakCount = 0
         if item.delta > 0 {
             let r = StreakEngine.bump(kidID: kid.id, ctx: ctx)
             streakCount = r.count
-            if r.bonus > 0 {
+            awards = r.awards
+            for award in awards {
                 ctx.insert(HistoryRecord(
                     kid: kid,
-                    title: "连续 \(r.count) 天 bonus",
-                    delta: r.bonus,
+                    title: "连续 \(award.days) 天 bonus",
+                    delta: award.points,
                     sourceKind: .streakBonus,
                     sourceId: "streak-bonus"
                 ))
-                bonus = r.bonus
             }
         }
         try? ctx.save()
         return WriteOutcome(
             points: PointMath.kidPoints(kid),
-            streakBonus: bonus,
-            streakCount: streakCount
+            streakBonus: awards.reduce(0) { $0 + $1.points },
+            streakCount: streakCount,
+            awards: awards
         )
     }
 
@@ -55,27 +61,28 @@ enum RecordStore {
             sourceId: "freeform-\(UUID().uuidString)"
         ))
 
-        var bonus = 0
+        var awards: [StreakAward] = []
         var streakCount = 0
         if delta > 0 {
             let r = StreakEngine.bump(kidID: kid.id, ctx: ctx)
             streakCount = r.count
-            if r.bonus > 0 {
+            awards = r.awards
+            for award in awards {
                 ctx.insert(HistoryRecord(
                     kid: kid,
-                    title: "连续 \(r.count) 天 bonus",
-                    delta: r.bonus,
+                    title: "连续 \(award.days) 天 bonus",
+                    delta: award.points,
                     sourceKind: .streakBonus,
                     sourceId: "streak-bonus"
                 ))
-                bonus = r.bonus
             }
         }
         try? ctx.save()
         return WriteOutcome(
             points: PointMath.kidPoints(kid),
-            streakBonus: bonus,
-            streakCount: streakCount
+            streakBonus: awards.reduce(0) { $0 + $1.points },
+            streakCount: streakCount,
+            awards: awards
         )
     }
 
@@ -92,18 +99,7 @@ enum RecordStore {
         return true
     }
 
-    /// 删掉一条记录并回调积分。积分由历史与兑换汇总得出，所以删掉即回调，
-    /// 不需要额外写一条反向记录。返回回调后该孩子的积分。
-    @MainActor
-    static func deleteRecord(_ record: HistoryRecord, ctx: ModelContext) -> Int {
-        let kid = record.kid
-        ctx.delete(record)
-        try? ctx.save()
-        return kid.map(PointMath.kidPoints) ?? 0
-    }
-
-    /// 直接设定孩子的总积分。积分是历史与兑换的汇总值，所以写一条差额记录对齐到目标值，
-    /// 这样历程里仍能看出积分是怎么变的。返回设定后的积分。
+    /// 直接设定总积分，差额记一条历史，方便回溯。返回设定后的积分。
     @MainActor
     static func setPoints(_ target: Int, for kid: Kid, ctx: ModelContext) -> Int {
         let current = PointMath.kidPoints(kid)
@@ -118,5 +114,60 @@ enum RecordStore {
             try? ctx.save()
         }
         return PointMath.kidPoints(kid)
+    }
+
+    /// 删掉一条记录并回调积分。积分由历史与兑换汇总得出，所以删掉即回调，
+    /// 不需要额外写一条反向记录。返回回调后该孩子的积分。
+    @MainActor
+    static func deleteRecord(_ record: HistoryRecord, ctx: ModelContext) -> Int {
+        let kid = record.kid
+        ctx.delete(record)
+        try? ctx.save()
+        return kid.map(PointMath.kidPoints) ?? 0
+    }
+
+    /// 删掉一条兑换记录，兑换花掉的分会回到孩子账上。返回退回后的积分。
+    @MainActor
+    static func deleteRedemption(_ redemption: Redemption, ctx: ModelContext) -> Int {
+        let kid = redemption.kid
+        ctx.delete(redemption)
+        try? ctx.save()
+        return kid.map(PointMath.kidPoints) ?? 0
+    }
+
+    /// 撤销删除：按快照重新写一条记录。返回恢复后的积分。
+    @MainActor
+    static func restore(_ snapshot: HistorySnapshot, ctx: ModelContext) -> Int {
+        guard let kid = kid(withID: snapshot.kidID, ctx: ctx) else { return 0 }
+        ctx.insert(HistoryRecord(
+            kid: kid,
+            title: snapshot.title,
+            delta: snapshot.delta,
+            timestamp: snapshot.timestamp,
+            sourceKind: snapshot.sourceKind
+        ))
+        try? ctx.save()
+        return PointMath.kidPoints(kid)
+    }
+
+    /// 撤销撤销兑换：把花掉的分还回去。返回恢复后的积分。
+    @MainActor
+    static func restoreRedemption(_ snapshot: RedemptionSnapshot, ctx: ModelContext) -> Int {
+        guard let kid = kid(withID: snapshot.kidID, ctx: ctx) else { return 0 }
+        ctx.insert(Redemption(
+            kid: kid,
+            productName: snapshot.productName,
+            cost: snapshot.cost,
+            timestamp: snapshot.timestamp
+        ))
+        try? ctx.save()
+        return PointMath.kidPoints(kid)
+    }
+
+    @MainActor
+    private static func kid(withID id: UUID?, ctx: ModelContext) -> Kid? {
+        guard let id else { return nil }
+        let pred = #Predicate<Kid> { $0.id == id }
+        return try? ctx.fetch(FetchDescriptor<Kid>(predicate: pred)).first
     }
 }

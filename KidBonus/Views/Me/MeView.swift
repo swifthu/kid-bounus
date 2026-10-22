@@ -5,9 +5,11 @@ struct MeView: View {
     // 按名字排序：不排序的话 @Query 的顺序不稳定，两个孩子会换位置
     @Query(sort: \Kid.name) private var kids: [Kid]
     @Query private var allItems: [PointItem]
+    @Query(sort: \BonusRule.days) private var rules: [BonusRule]
     @Environment(\.modelContext) private var ctx
     @Environment(ToastCenter.self) private var toast
     @State private var itemSheet: ItemSheet?
+    @State private var ruleSheet: RuleSheet?
     @State private var showReset = false
 
     /// 新增和编辑共用一个弹层：编辑时传已有项目，界面预填内容。
@@ -20,6 +22,24 @@ struct MeView: View {
             case .add(let kind): return "add-\(kind.rawValue)"
             case .edit(let item): return "edit-\(item.id.uuidString)"
             }
+        }
+    }
+
+    /// bonus 规则同样复用「新增 / 编辑」一个弹层。
+    private enum RuleSheet: Identifiable {
+        case create
+        case edit(BonusRule)
+
+        var id: String {
+            switch self {
+            case .create: return "create"
+            case .edit(let r): return "edit-\(r.id.uuidString)"
+            }
+        }
+
+        var rule: BonusRule? {
+            if case .edit(let r) = self { return r }
+            return nil
         }
     }
 
@@ -91,13 +111,37 @@ struct MeView: View {
                         .buttonStyle(.plain)
                     }
 
-                    section("04", "数据") {
+                    section("04", "bonus 规则") {
+                        if rules.isEmpty {
+                            Text("还没有规则，加一条试试。")
+                                .font(.kami(.body, size: 12))
+                                .foregroundStyle(Color.kami.meta)
+                                .padding(Spacing.s3)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(Color.kami.surface)
+                                .clipShape(RoundedRectangle(cornerRadius: Radius.md))
+                        } else {
+                            ForEach(rules) { r in ruleRow(r) }
+                        }
+                        Button { ruleSheet = .create } label: {
+                            HStack {
+                                Image(systemName: "plus")
+                                Text("增加规则")
+                            }
+                            .frame(maxWidth: .infinity, minHeight: 44)
+                            .background(Color.kami.surfaceWarm)
+                            .clipShape(RoundedRectangle(cornerRadius: Radius.md))
+                        }
+                        .buttonStyle(.plain)
+                    }
+
+                    section("05", "数据") {
                         Button(role: .destructive) {
                             showReset = true
                         } label: {
                             Text("重置全部数据")
                                 .frame(maxWidth: .infinity, minHeight: 44)
-                                .background(Color(hex: 0xEFE2DF))
+                                .background(Color.kami.dangerBg)
                                 .foregroundStyle(Color.kami.danger)
                                 .clipShape(RoundedRectangle(cornerRadius: Radius.md))
                         }
@@ -124,7 +168,11 @@ struct MeView: View {
             case .add(let kind): AddItemSheet(kind: kind, item: nil)
             case .edit(let item): AddItemSheet(kind: item.kind, item: item)
             }
-        }        .confirmationDialog("重置全部数据？此操作不可撤销。",
+        }
+        .sheet(item: $ruleSheet) { target in
+            BonusRuleSheet(rule: target.rule)
+        }
+        .confirmationDialog("重置全部数据？此操作不可撤销。",
                             isPresented: $showReset,
                             titleVisibility: .visible) {
             Button("重置", role: .destructive) {
@@ -155,6 +203,52 @@ struct MeView: View {
     /// 点列表里的项目：打开编辑弹层，预填原有内容
     private func edit(_ it: PointItem) {
         itemSheet = .edit(it)
+    }
+
+    /// 一条 bonus 规则：左边说明文字，右边开关 + 编辑 + 删除。
+    private func ruleRow(_ r: BonusRule) -> some View {
+        HStack(spacing: Spacing.s2) {
+            Button { ruleSheet = .edit(r) } label: {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("连续 \(r.days) 天")
+                        .font(.kami(.body, size: 13))
+                    Text(r.enabled ? "已启用" : "已停用")
+                        .font(.kami(.body, size: 11))
+                        .foregroundStyle(Color.kami.meta)
+                }
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("rule.\(r.days)")
+            Spacer()
+            Text("+\(r.points) 分")
+                .font(.kami(.body, size: 14))
+                .foregroundStyle(Color.kami.warn)
+            Toggle("", isOn: Binding(
+                get: { r.enabled },
+                set: { v in r.enabled = v; try? ctx.save() }
+            ))
+            .labelsHidden()
+            .tint(Color.kami.accent)
+            Button { ruleSheet = .edit(r) } label: {
+                Image(systemName: "pencil").foregroundStyle(Color.kami.muted)
+            }
+            .buttonStyle(.plain)
+            Button(role: .destructive) {
+                ctx.delete(r)
+                try? ctx.save()
+                toast.show(.success, title: "已删除规则", body: "连续 \(r.days) 天 +\(r.points) 分")
+            } label: {
+                Image(systemName: "trash").foregroundStyle(Color.kami.danger)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, Spacing.s3)
+        .padding(.vertical, Spacing.s2)
+        .background(Color.kami.surface)
+        .clipShape(RoundedRectangle(cornerRadius: Radius.md))
+        .overlay(
+            RoundedRectangle(cornerRadius: Radius.md).stroke(Color.kami.border, lineWidth: 1)
+        )
     }
 
     private func editRow(_ it: PointItem) -> some View {

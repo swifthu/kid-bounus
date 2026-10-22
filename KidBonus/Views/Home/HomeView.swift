@@ -4,7 +4,9 @@ import SwiftData
 struct HomeView: View {
     // 按名字排序：不排序的话 @Query 的顺序不稳定，两个孩子会换位置
     @Query(sort: \Kid.name) private var kids: [Kid]
+    @Query private var allItems: [PointItem]
     @Environment(\.modelContext) private var ctx
+    @Environment(ToastCenter.self) private var toast
     @State private var quickPick: QuickPick? = nil
 
     /// 首页三个入口共用一个弹层：点头像卡片列全部加减分项，
@@ -48,11 +50,14 @@ struct HomeView: View {
                                 points: PointMath.kidPoints(kid),
                                 today: PointMath.todayDelta(kid),
                                 streak: streak(for: kid),
-                                bonusActive: streak(for: kid) >= 7
+                                bonusActive: streak(for: kid) >= 7,
+                                recentItems: recentItems(for: kid)
                             ) {
                                 quickPick = .kid(kid.id.uuidString)
                             } onSetPoints: {
                                 quickPick = .setPoints(kid.id.uuidString)
+                            } onPickItem: { item in
+                                RecordActions.record(item, on: kid, ctx: ctx, toast: toast)
                             }
                         }
                     }
@@ -93,6 +98,19 @@ struct HomeView: View {
 
     private func streak(for kid: Kid) -> Int {
         StreakEngine.currentStreak(kidID: kid.id, ctx: ctx)?.count ?? 0
+    }
+
+    /// 常用项：这个孩子能看到的、已经用过的项，按用得多的排前面。
+    private func recentItems(for kid: Kid) -> [PointItem] {
+        ItemFilter.visible(allItems, kidID: kid.id)
+            .filter { $0.usageCount > 0 }
+            .sorted { lhs, rhs in
+                lhs.usageCount == rhs.usageCount
+                    ? lhs.title < rhs.title
+                    : lhs.usageCount > rhs.usageCount
+            }
+            .prefix(6)
+            .map { $0 }
     }
 
     private var todayLabel: String {

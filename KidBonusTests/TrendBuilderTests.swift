@@ -5,7 +5,7 @@ import SwiftData
 @MainActor
 final class TrendBuilderTests: XCTestCase {
     private func makeFixture() throws -> (ModelContainer, Kid) {
-        let schema = Schema([Kid.self, PointItem.self, Product.self,
+        let schema = Schema([Kid.self, PointItem.self, Product.self, BonusRule.self,
                              HistoryRecord.self, Redemption.self, Streak.self])
         let cfg = ModelConfiguration(isStoredInMemoryOnly: true)
         let container = try ModelContainer(for: schema, configurations: cfg)

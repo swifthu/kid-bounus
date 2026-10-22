@@ -5,7 +5,7 @@ import SwiftData
 @MainActor
 final class RecordStoreTests: XCTestCase {
     private func makeContainer() throws -> ModelContainer {
-        let schema = Schema([Kid.self, PointItem.self, Product.self,
+        let schema = Schema([Kid.self, PointItem.self, Product.self, BonusRule.self,
                              HistoryRecord.self, Redemption.self, Streak.self])
         let cfg = ModelConfiguration(isStoredInMemoryOnly: true)
         return try ModelContainer(for: schema, configurations: cfg)

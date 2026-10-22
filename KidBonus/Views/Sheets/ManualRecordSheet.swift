@@ -37,8 +37,8 @@ struct ManualRecordSheet: View {
                                 .font(.kami(.body, size: 12))
                                 .padding(.horizontal, Spacing.s3).padding(.vertical, Spacing.s2)
                                 .background(rf.delta > 0
-                                            ? Color(hex: 0xE6EDE0)
-                                            : Color(hex: 0xEFE2DF))
+                                            ? Color.kami.successBg
+                                            : Color.kami.dangerBg)
                                 .foregroundStyle(rf.delta > 0 ? Color.kami.success : Color.kami.danger)
                                 .clipShape(Capsule())
                         }

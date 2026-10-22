@@ -5,7 +5,7 @@ import SwiftData
 final class SeedDataTests: XCTestCase {
     @MainActor
     func testInstallIfEmptySeedsKidsAndItems() throws {
-        let schema = Schema([Kid.self, PointItem.self, Product.self,
+        let schema = Schema([Kid.self, PointItem.self, Product.self, BonusRule.self,
                              HistoryRecord.self, Redemption.self, Streak.self])
         let cfg = ModelConfiguration(isStoredInMemoryOnly: true)
         let container = try ModelContainer(for: schema, configurations: cfg)
@@ -21,7 +21,7 @@ final class SeedDataTests: XCTestCase {
 
     @MainActor
     func testInstallIfEmptyIsIdempotent() throws {
-        let schema = Schema([Kid.self, PointItem.self, Product.self,
+        let schema = Schema([Kid.self, PointItem.self, Product.self, BonusRule.self,
                              HistoryRecord.self, Redemption.self, Streak.self])
         let cfg = ModelConfiguration(isStoredInMemoryOnly: true)
         let container = try ModelContainer(for: schema, configurations: cfg)
@@ -34,7 +34,7 @@ final class SeedDataTests: XCTestCase {
 
     @MainActor
     func testInstallFreshWipesAndReseeds() throws {
-        let schema = Schema([Kid.self, PointItem.self, Product.self,
+        let schema = Schema([Kid.self, PointItem.self, Product.self, BonusRule.self,
                              HistoryRecord.self, Redemption.self, Streak.self])
         let cfg = ModelConfiguration(isStoredInMemoryOnly: true)
         let container = try ModelContainer(for: schema, configurations: cfg)

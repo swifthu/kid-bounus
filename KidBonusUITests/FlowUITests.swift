@@ -463,8 +463,20 @@ final class FlowUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["完成作业"].exists)
     }
 
-    /// 右滑露出删除按钮，删掉后积分要回调。
-    func test历程右滑删除并回调积分() {
+    /// 在某一行上向左拖，拖过按钮宽度的一半才会展开删除按钮。
+    /// 从元素本身的坐标出发不可靠（标题文本很窄），这里用整屏坐标从行右侧往左拖。
+    private func swipeLeft(on element: XCUIElement) {
+        let appFrame = app.frame
+        let y = element.frame.midY / appFrame.height
+        let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: y))
+        let end = app.coordinate(
+            withNormalizedOffset: CGVector(dx: 0.9 - 180 / appFrame.width, dy: y)
+        )
+        start.press(forDuration: 0.05, thenDragTo: end)
+    }
+
+    /// 左滑露出删除按钮，删掉后积分要回调。
+    func test历程左滑删除并回调积分() {
         goToTab("加减")
         button(startingWith: "完成作业").tap()   // +5
         sleep(1)
@@ -472,14 +484,10 @@ final class FlowUITests: XCTestCase {
         goToTab("历程")
         XCTAssertTrue(app.staticTexts["完成作业"].waitForExistence(timeout: 5))
 
-        let row = app.staticTexts["完成作业"]
-        // 标题文本很窄，要拖到 dx 2.5 才够拉开删除按钮
-        let start = row.coordinate(withNormalizedOffset: CGVector(dx: 0.2, dy: 0.5))
-        let end = row.coordinate(withNormalizedOffset: CGVector(dx: 2.5, dy: 0.5))
-        start.press(forDuration: 0.05, thenDragTo: end)
+        swipeLeft(on: app.staticTexts["完成作业"])
 
         let del = app.buttons["删除"]
-        XCTAssertTrue(del.waitForExistence(timeout: 5), "右滑应露出删除按钮")
+        XCTAssertTrue(del.waitForExistence(timeout: 5), "左滑应露出删除按钮")
         del.tap()
 
         // toast 只显示 2.4 秒，必须先查它，再做会耗时 2 秒的存在性断言
@@ -493,6 +501,96 @@ final class FlowUITests: XCTestCase {
         goToTab("首页")
         XCTAssertTrue(app.staticTexts["0"].waitForExistence(timeout: 5),
                       "删掉 +5 后积分应回到 0")
+    }
+
+    /// 删错了能反悔：toast 上的「撤销」把记录要回来。
+    func test删除后可以撤销() {
+        goToTab("加减")
+        button(startingWith: "完成作业").tap()   // +5
+        sleep(1)
+
+        goToTab("历程")
+        XCTAssertTrue(app.staticTexts["完成作业"].waitForExistence(timeout: 5))
+
+        swipeLeft(on: app.staticTexts["完成作业"])
+        let del = app.buttons["删除"]
+        XCTAssertTrue(del.waitForExistence(timeout: 5), "左滑应露出删除按钮")
+        del.tap()
+
+        let undo = app.buttons["撤销"]
+        XCTAssertTrue(undo.waitForExistence(timeout: 5), "删除后应给出撤销入口")
+        undo.tap()
+
+        XCTAssertTrue(app.staticTexts["完成作业"].waitForExistence(timeout: 5),
+                      "撤销后记录应回到列表")
+    }
+
+    /// 商城里的兑换记录也能左滑撤销，分数要退回来。
+    func test商城兑换记录可左滑撤销() {
+        // 先攒够 25 分，贴纸一包要 25 分
+        goToTab("加减")
+        for _ in 0..<5 {
+            button(startingWith: "完成作业").tap()
+            sleep(1)
+        }
+
+        goToTab("商城")
+        button(startingWith: "贴纸一包").tap()
+        XCTAssertTrue(app.buttons["兑换"].waitForExistence(timeout: 5))
+        app.buttons["兑换"].tap()
+        sleep(1)
+
+        let row = app.staticTexts["redemption.贴纸一包"].firstMatch
+        XCTAssertTrue(row.waitForExistence(timeout: 5), "兑换记录应出现在商城页")
+        swipeLeft(on: row)
+
+        let del = app.buttons["删除"]
+        XCTAssertTrue(del.waitForExistence(timeout: 5), "左滑应露出删除按钮")
+        del.tap()
+
+        let undo = app.buttons["撤销"]
+        XCTAssertTrue(undo.waitForExistence(timeout: 5), "撤销兑换后应有撤销入口")
+    }
+
+    // MARK: bonus 规则
+
+    /// 「我的」页可以自定义 bonus 规则：连续几天发多少分。
+    func test我的页可新增bonus规则() {
+        goToTab("我的")
+        button(startingWith: "增加规则").tap()
+
+        XCTAssertTrue(app.buttons["保存"].waitForExistence(timeout: 5), "规则弹层未打开")
+        let fields = app.textFields
+        XCTAssertGreaterThanOrEqual(fields.count, 2)
+        fields.element(boundBy: 0).tap()
+        fields.element(boundBy: 0).typeText("3")
+        fields.element(boundBy: 1).tap()
+        fields.element(boundBy: 1).typeText("15")
+
+        app.buttons["保存"].tap()
+
+        XCTAssertTrue(app.staticTexts["连续 3 天"].waitForExistence(timeout: 5),
+                      "新规则应出现在列表里")
+        XCTAssertTrue(app.staticTexts["+15 分"].exists, "应显示奖励分数")
+    }
+
+    // MARK: 首页常用项
+
+    /// 用过的项会在卡片上留一个快捷入口，点一下直接记分。
+    func test首页常用项一键记分() {
+        goToTab("加减")
+        button(startingWith: "完成作业").tap()   // +5
+        sleep(1)
+
+        goToTab("首页")
+        let chip = app.buttons["recent.完成作业"].firstMatch
+        XCTAssertTrue(chip.waitForExistence(timeout: 5), "用过的项应出现在卡片的常用栏")
+        chip.tap()
+
+        let toast = app.staticTexts.containing(
+            NSPredicate(format: "label CONTAINS %@", "当前 10 分")
+        ).firstMatch
+        XCTAssertTrue(toast.waitForExistence(timeout: 5), "点常用项应直接记到 10 分")
     }
 
     // MARK: 统计

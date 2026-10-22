@@ -28,9 +28,9 @@ struct Tag: View {
 
     private var background: Color {
         switch kind {
-        case .success: return Color(hex: 0xE6EDE0)
-        case .danger:  return Color(hex: 0xEFE2DF)
-        case .warn:    return Color(hex: 0xEFE7D3)
+        case .success: return Color.kami.successBg
+        case .danger:  return Color.kami.dangerBg
+        case .warn:    return Color.kami.warnBg
         case .faint:   return .kami.tagBgFaint
         default:       return .kami.tagBgSoft
         }

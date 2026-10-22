@@ -15,6 +15,7 @@ struct AddItemSheet: View {
     @State private var title: String = ""
     @State private var deltaText: String = ""
     @State private var desc: String = ""
+    @State private var iconName: String = ""
     @State private var loaded = false
 
     private var isEditing: Bool { item != nil }
@@ -28,13 +29,16 @@ struct AddItemSheet: View {
             actions: [
                 SheetAction(title: "取消", primary: false) { dismiss() },
                 SheetAction(title: "保存", primary: true) { save() }
-            ]
+            ],
+            detents: [.large]
         ) {
             ScopeTabs(scopes: scopes, selected: effectiveTag) { scopeTag = $0 }
 
             Field(text: $title, placeholder: "项目名称，如：刷牙早晚")
             Field(text: $deltaText, placeholder: "分值（整数）", keyboard: .numberPad)
             Field(text: $desc, placeholder: "一句说明（可选）")
+
+            IconPicker(selection: $iconName)
         }
         .onAppear(perform: loadIfNeeded)
     }
@@ -107,6 +111,7 @@ struct AddItemSheet: View {
     private func loadIfNeeded() {
         guard !loaded else { return }
         loaded = true
+        iconName = item?.iconName ?? ItemValidator.defaultIconName(for: effectiveKind)
         guard let item else { return }
         title = item.title
         deltaText = "\(item.delta)"
@@ -135,10 +140,11 @@ struct AddItemSheet: View {
             item.delta = draft.delta
             item.desc = draft.desc
             item.kidID = draft.kidID
+            item.iconName = iconName
         } else {
             ctx.insert(PointItem(
                 kind: kind, title: draft.title, delta: draft.delta,
-                iconName: ItemValidator.defaultIconName(for: kind),
+                iconName: iconName,
                 desc: draft.desc, kidID: draft.kidID
             ))
         }
