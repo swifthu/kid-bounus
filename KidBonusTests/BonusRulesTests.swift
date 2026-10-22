@@ -70,9 +70,11 @@ final class BonusRulesTests: XCTestCase {
         XCTAssertEqual(draft, BonusRuleDraft(days: 7, points: 20))
     }
 
-    func test奖励为零分是允许的() throws {
-        let draft = try BonusRuleValidator.validate(daysText: "7", pointsText: "0")
-        XCTAssertEqual(draft.points, 0)
+    func test奖励为零分报错() {
+        // 0 分的规则只会多一条 +0 的历史记录，没有任何提示，没意义
+        XCTAssertThrowsError(try BonusRuleValidator.validate(daysText: "7", pointsText: "0")) {
+            XCTAssertEqual($0 as? BonusRuleValidationError, .invalidPoints)
+        }
     }
 
     func test天数为空报错() {

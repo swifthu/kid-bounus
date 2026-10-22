@@ -121,6 +121,8 @@ enum RecordStore {
     @MainActor
     static func deleteRecord(_ record: HistoryRecord, ctx: ModelContext) -> Int {
         let kid = record.kid
+        // 这条记录用掉的预设项次数也要退回去，「最近常用」才和实际一致
+        adjustUsage(sourceId: record.sourceId, by: -1, ctx: ctx)
         ctx.delete(record)
         try? ctx.save()
         return kid.map(PointMath.kidPoints) ?? 0
@@ -144,10 +146,23 @@ enum RecordStore {
             title: snapshot.title,
             delta: snapshot.delta,
             timestamp: snapshot.timestamp,
-            sourceKind: snapshot.sourceKind
+            sourceKind: snapshot.sourceKind,
+            sourceId: snapshot.sourceId
         ))
+        // 记录回来了，预设项的次数也得加回去
+        adjustUsage(sourceId: snapshot.sourceId, by: 1, ctx: ctx)
         try? ctx.save()
         return PointMath.kidPoints(kid)
+    }
+
+    /// 预设项的记录里 sourceId 存的是项目 id（自由记录和 bonus 存的是别的串），
+    /// 用它把「用了几次」一起加减，首页的「最近常用」才不会和实际对不上。
+    @MainActor
+    private static func adjustUsage(sourceId: String?, by delta: Int, ctx: ModelContext) {
+        guard let sourceId, let uuid = UUID(uuidString: sourceId) else { return }
+        let pred = #Predicate<PointItem> { $0.id == uuid }
+        guard let item = try? ctx.fetch(FetchDescriptor<PointItem>(predicate: pred)).first else { return }
+        item.usageCount = max(0, item.usageCount + delta)
     }
 
     /// 撤销撤销兑换：把花掉的分还回去。返回恢复后的积分。

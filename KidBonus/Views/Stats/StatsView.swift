@@ -19,7 +19,8 @@ struct StatsView: View {
                     .padding(.horizontal, Spacing.s4)
 
                     KidTabs(kids: kids, selected: Binding(
-                        get: { KidPicker.resolve(storedID: currentKidID, availableIDs: kids.map(\.id)) ?? kids[0].id },
+                        // kids 为空时不能 kids[0]，那会越界崩溃
+                        get: { KidPicker.resolve(storedID: currentKidID, availableIDs: kids.map(\.id)) ?? kids.first?.id ?? UUID() },
                         set: { currentKidID = $0.uuidString }
                     ))
                     .padding(.horizontal, Spacing.s4)

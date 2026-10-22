@@ -26,9 +26,18 @@ struct IconPicker: View {
     }
 
     private var rows: [[String]] {
-        stride(from: 0, to: IconPreset.all.count, by: perRow).map { start in
-            Array(IconPreset.all[start..<min(start + perRow, IconPreset.all.count)])
+        stride(from: 0, to: cells.count, by: perRow).map { start in
+            Array(cells[start..<min(start + perRow, cells.count)])
         }
+    }
+
+    /// 当前选中的图标不在预设表里时（老数据），单独补一格，
+    /// 否则打开编辑界面一个图标都不高亮，看着像选择器坏了。
+    private var cells: [String] {
+        if !selection.isEmpty && !IconPreset.all.contains(selection) {
+            return [selection] + IconPreset.all
+        }
+        return IconPreset.all
     }
 
     private func cell(_ name: String) -> some View {

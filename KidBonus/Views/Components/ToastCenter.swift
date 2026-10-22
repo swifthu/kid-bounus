@@ -48,28 +48,28 @@ struct ToastBanner: View {
         HStack(spacing: Spacing.s2) {
             Image(systemName: iconName)
                 .frame(width: 28, height: 28)
-                .background(Color.white.opacity(0.15))
+                .background(foreground.opacity(0.18))
                 .clipShape(RoundedRectangle(cornerRadius: Radius.sm))
             VStack(alignment: .leading, spacing: 2) {
                 Text(toast.title).font(.kami(.body, size: 14))
                 if let b = toast.body {
                     Text(b).font(.kami(.body, size: 12))
-                        .foregroundStyle(Color.white.opacity(0.9))
+                        .foregroundStyle(foreground.opacity(0.9))
                 }
             }
             Spacer()
             if let action = toast.action {
                 Button(action.title) { action.handler() }
                     .font(.kami(.body, size: 14))
-                    .foregroundStyle(Color.white)
+                    .foregroundStyle(foreground)
                     .padding(.horizontal, Spacing.s2)
                     .padding(.vertical, 4)
-                    .background(Color.white.opacity(0.18))
+                    .background(foreground.opacity(0.18))
                     .clipShape(RoundedRectangle(cornerRadius: Radius.sm))
             }
         }
         .padding(Spacing.s3)
-        .foregroundStyle(Color.white)
+        .foregroundStyle(foreground)
         .background(background)
         .clipShape(RoundedRectangle(cornerRadius: Radius.md))
         .padding(.horizontal, Spacing.s4)
@@ -83,11 +83,22 @@ struct ToastBanner: View {
         case .info:    return "info"
         }
     }
+
+    /// toast 自带一套底色和字色。深色模式下 success/danger/accent 都是浅色，
+    /// 白字压在上面看不清，所以这里用专门的深底浅字配色。
     private var background: Color {
         switch toast.kind {
-        case .success: return .kami.success
-        case .danger:  return .kami.danger
-        case .info:    return .kami.accent
+        case .success: return .kami.toastSuccessBg
+        case .danger:  return .kami.toastDangerBg
+        case .info:    return .kami.toastInfoBg
+        }
+    }
+
+    private var foreground: Color {
+        switch toast.kind {
+        case .success: return .kami.toastSuccessFg
+        case .danger:  return .kami.toastDangerFg
+        case .info:    return .kami.toastInfoFg
         }
     }
 }

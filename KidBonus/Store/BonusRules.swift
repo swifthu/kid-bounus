@@ -9,6 +9,8 @@ struct HistorySnapshot: Equatable {
     let delta: Int
     let timestamp: Date
     let sourceKind: SourceKind
+    /// 预设项的记录里存的是项目 id，撤销时好把「用了几次」加回去
+    let sourceId: String?
 
     init(_ record: HistoryRecord) {
         kidID = record.kid?.id
@@ -16,6 +18,7 @@ struct HistorySnapshot: Equatable {
         delta = record.delta
         timestamp = record.timestamp
         sourceKind = record.sourceKind
+        sourceId = record.sourceId
     }
 }
 

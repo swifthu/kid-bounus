@@ -61,7 +61,7 @@ struct BonusRuleSheet: View {
             case .emptyDays:     message = "请填连续天数"
             case .invalidDays:   message = "连续天数要大于 0"
             case .emptyPoints:   message = "请填奖励分数"
-            default:             message = "奖励分数不能为负数"
+            default:             message = "奖励分数要大于 0"
             }
             toast.show(.danger, title: message)
             return

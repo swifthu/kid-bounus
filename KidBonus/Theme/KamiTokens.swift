@@ -30,6 +30,15 @@ extension Color {
         static let successBg    = Color(light: 0xE6EDE0, dark: 0x26301F)
         static let warnBg       = Color(light: 0xEFE7D3, dark: 0x332C1B)
         static let dangerBg     = Color(light: 0xEFE2DF, dark: 0x33221F)
+
+        // toast 专用：深色模式下 success/danger/accent 都是浅色，白字压上去看不清，
+        // 所以 toast 单独一套「深底浅字」，两种外观下对比度都够。
+        static let toastSuccessBg = Color(light: 0x4A6B3A, dark: 0x24301F)
+        static let toastSuccessFg = Color(light: 0xFAF9F5, dark: 0x9BC47E)
+        static let toastDangerBg  = Color(light: 0x8A3A30, dark: 0x33221F)
+        static let toastDangerFg  = Color(light: 0xFAF9F5, dark: 0xE59084)
+        static let toastInfoBg    = Color(light: 0x1B365D, dark: 0x1B365D)
+        static let toastInfoFg    = Color(light: 0xFAF9F5, dark: 0x7FA8DC)
     }
 
     /// 跟随浅色 / 深色外观。

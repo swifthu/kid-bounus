@@ -49,6 +49,25 @@ final class SeedDataTests: XCTestCase {
         XCTAssertEqual(hist.count, 0)
     }
 
+    /// 种子数据用到的图标必须都在预设表里，否则编辑时一个图标都不高亮。
+    @MainActor
+    func test种子数据的图标都在预设表里() throws {
+        let schema = Schema([Kid.self, PointItem.self, Product.self, BonusRule.self,
+                             HistoryRecord.self, Redemption.self, Streak.self])
+        let cfg = ModelConfiguration(isStoredInMemoryOnly: true)
+        let container = try ModelContainer(for: schema, configurations: cfg)
+        let ctx = container.mainContext
+        SeedData.installFresh(ctx: ctx)
+
+        let items = try ctx.fetch(FetchDescriptor<PointItem>())
+        let products = try ctx.fetch(FetchDescriptor<Product>())
+        let used = items.compactMap(\.iconName) + products.compactMap(\.iconName)
+        XCTAssertFalse(used.isEmpty)
+        for name in used {
+            XCTAssertTrue(IconPreset.all.contains(name), "预设表里缺少种子图标：\(name)")
+        }
+    }
+
     /// 用户在「我的」里把规则删光后，重启不该又把默认规则塞回来。
     @MainActor
     func test规则被删光后不会被自动塞回() throws {

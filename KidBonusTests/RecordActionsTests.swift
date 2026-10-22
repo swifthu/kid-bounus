@@ -51,6 +51,24 @@ final class RecordActionsTests: XCTestCase {
         XCTAssertEqual(kid.history.first?.title, "完成作业")
     }
 
+    /// 预设项「用了几次」要跟着记录一起增减，首页的「最近常用」才对得上。
+    func test删除记录会退回预设项的使用次数() throws {
+        let kid = makeKid()
+        let item = PointItem(kind: .add, title: "完成作业", delta: 5, desc: "测试项")
+        ctx.insert(item)
+        _ = RecordStore.recordItem(item, on: kid, ctx: ctx)
+        XCTAssertEqual(item.usageCount, 1)
+
+        let toast = ToastCenter()
+        let record = try XCTUnwrap(kid.history.first)
+        RecordActions.deleteRecord(record, ctx: ctx, toast: toast)
+        XCTAssertEqual(item.usageCount, 0, "删掉记录后次数要退回去")
+
+        let action = try XCTUnwrap(toast.current?.action)
+        action.handler()
+        XCTAssertEqual(item.usageCount, 1, "撤销后次数要加回来")
+    }
+
     func test撤销兑换后商品记录和分数都回来() throws {
         let kid = makeKid()
         ctx.insert(HistoryRecord(kid: kid, title: "攒分", delta: 100, sourceKind: .preset))
