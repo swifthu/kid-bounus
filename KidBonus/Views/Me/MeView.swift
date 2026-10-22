@@ -223,7 +223,7 @@ struct MeView: View {
             Text("+\(r.points) 分")
                 .font(.kami(.body, size: 14))
                 .foregroundStyle(Color.kami.warn)
-            Toggle("", isOn: Binding(
+            Toggle("启用这条规则", isOn: Binding(
                 get: { r.enabled },
                 set: { v in r.enabled = v; try? ctx.save() }
             ))
