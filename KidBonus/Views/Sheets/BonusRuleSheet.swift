@@ -58,10 +58,18 @@ struct BonusRuleSheet: View {
         } catch {
             let message: String
             switch error as? BonusRuleValidationError {
+            case .emptyDays:     message = "请填连续天数"
             case .invalidDays:   message = "连续天数要大于 0"
+            case .emptyPoints:   message = "请填奖励分数"
             default:             message = "奖励分数不能为负数"
             }
             toast.show(.danger, title: message)
+            return
+        }
+
+        // 同一个周期只能有一条规则，否则连续满 N 天会同时发两份奖
+        if BonusRules.hasRule(days: draft.days, excluding: rule?.id, ctx: ctx) {
+            toast.show(.danger, title: "已经有连续 \(draft.days) 天的规则了")
             return
         }
 

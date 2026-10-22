@@ -2,6 +2,9 @@ import Foundation
 import SwiftData
 
 enum SeedData {
+    /// 默认规则只自动装一次。用户自己把规则删光后，重启不该又被塞回来。
+    static let rulesSeededKey = "bonusRulesSeeded"
+
     static func installIfEmpty(ctx: ModelContext) {
         let kids = (try? ctx.fetchCount(FetchDescriptor<Kid>())) ?? 0
         if kids == 0 {
@@ -13,9 +16,12 @@ enum SeedData {
     }
 
     /// 没有规则时写入默认的「每 7 天 +20 / 每 30 天 +100」。
+    /// 只在第一次装：用户删光规则后，这一行不能再把默认规则塞回去。
     static func installRulesIfMissing(ctx: ModelContext) {
         let count = (try? ctx.fetchCount(FetchDescriptor<BonusRule>())) ?? 0
         guard count == 0 else { return }
+        guard !UserDefaults.standard.bool(forKey: rulesSeededKey) else { return }
+        UserDefaults.standard.set(true, forKey: rulesSeededKey)
         defaultRules().forEach(ctx.insert)
         try? ctx.save()
     }
@@ -80,6 +86,8 @@ enum SeedData {
 
         // Bonus rules
         defaultRules().forEach(ctx.insert)
+        // 重置后规则回到默认，也算「已经装过」，之后不该再自动补规则
+        UserDefaults.standard.set(true, forKey: rulesSeededKey)
 
         try? ctx.save()
     }

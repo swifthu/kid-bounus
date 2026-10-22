@@ -34,29 +34,34 @@ enum RecordActions {
     }
 
     static func deleteRecord(_ record: HistoryRecord, ctx: ModelContext, toast: ToastCenter) {
+        // 先把要用的字段取出来：删掉之后再去读这个 model 的属性，行为就没保证了
         let snapshot = HistorySnapshot(record)
+        let title = record.title
+        let delta = record.delta
         let who = record.kid?.name ?? ""
         let points = RecordStore.deleteRecord(record, ctx: ctx)
         toast.show(.success,
-                   title: "已删除「\(record.title)」",
-                   body: "回调 \(abs(record.delta)) 分 · \(who)当前 \(points) 分",
+                   title: "已删除「\(title)」",
+                   body: "回调 \(abs(delta)) 分 · \(who)当前 \(points) 分",
                    action: .init(title: "撤销") {
                        let back = RecordStore.restore(snapshot, ctx: ctx)
-                       toast.show(.info, title: "已恢复「\(record.title)」", body: "当前 \(back) 分")
+                       toast.show(.info, title: "已恢复「\(title)」", body: "当前 \(back) 分")
                    })
     }
 
     static func deleteRedemption(_ redemption: Redemption, ctx: ModelContext, toast: ToastCenter) {
         let snapshot = RedemptionSnapshot(redemption)
+        let name = redemption.productName
+        let cost = redemption.cost
         let who = redemption.kid?.name ?? ""
         let points = RecordStore.deleteRedemption(redemption, ctx: ctx)
         toast.show(.success,
-                   title: "已撤销兑换「\(redemption.productName)」",
-                   body: "退回 \(redemption.cost) 分 · \(who)当前 \(points) 分",
+                   title: "已撤销兑换「\(name)」",
+                   body: "退回 \(cost) 分 · \(who)当前 \(points) 分",
                    action: .init(title: "撤销") {
                        let back = RecordStore.restoreRedemption(snapshot, ctx: ctx)
                        toast.show(.info,
-                                  title: "已恢复兑换「\(redemption.productName)」",
+                                  title: "已恢复兑换「\(name)」",
                                   body: "当前 \(back) 分")
                    })
     }

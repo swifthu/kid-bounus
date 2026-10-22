@@ -5,6 +5,7 @@ struct HomeView: View {
     // 按名字排序：不排序的话 @Query 的顺序不稳定，两个孩子会换位置
     @Query(sort: \Kid.name) private var kids: [Kid]
     @Query private var allItems: [PointItem]
+    @Query(sort: \BonusRule.days) private var rules: [BonusRule]
     @Environment(\.modelContext) private var ctx
     @Environment(ToastCenter.self) private var toast
     @State private var quickPick: QuickPick? = nil
@@ -50,7 +51,8 @@ struct HomeView: View {
                                 points: PointMath.kidPoints(kid),
                                 today: PointMath.todayDelta(kid),
                                 streak: streak(for: kid),
-                                bonusActive: streak(for: kid) >= 7,
+                                bonusActive: bonusActive(for: kid),
+                                bonusLabel: bonusLabel(for: kid),
                                 recentItems: recentItems(for: kid)
                             ) {
                                 quickPick = .kid(kid.id.uuidString)
@@ -98,6 +100,21 @@ struct HomeView: View {
 
     private func streak(for kid: Kid) -> Int {
         StreakEngine.currentStreak(kidID: kid.id, ctx: ctx)?.count ?? 0
+    }
+
+    /// 最短的那条启用规则决定 bonus 什么时候解锁，规则是用户自己定的，不能写死 7 天。
+    private var firstRuleDays: Int? {
+        rules.first(where: { $0.enabled && $0.days > 0 })?.days
+    }
+
+    private func bonusActive(for kid: Kid) -> Bool {
+        guard let days = firstRuleDays else { return false }
+        return streak(for: kid) >= days
+    }
+
+    private func bonusLabel(for kid: Kid) -> String {
+        guard firstRuleDays != nil else { return "未设规则" }
+        return bonusActive(for: kid) ? "bonus 激活" : "bonus 待解锁"
     }
 
     /// 常用项：这个孩子能看到的、已经用过的项，按用得多的排前面。

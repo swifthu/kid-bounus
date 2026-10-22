@@ -7,6 +7,8 @@ struct KidCard: View {
     let today: Int
     let streak: Int
     let bonusActive: Bool
+    /// bonus 状态的说明文字，随规则和孩子而变
+    let bonusLabel: String
     /// 常用积分项，点一下直接记分
     let recentItems: [PointItem]
     /// 点卡片其它位置：打开记分卡片
@@ -52,7 +54,7 @@ struct KidCard: View {
                                color: today >= 0 ? Color.kami.success : Color.kami.danger)
                     statBlock(value: "\(streak)", label: "连续天数")
                     statBlock(value: bonusActive ? "★" : "·",
-                               label: bonusActive ? "bonus 激活" : "bonus 待解锁",
+                               label: bonusLabel,
                                color: bonusActive ? Color.kami.warn : Color.kami.muted)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)

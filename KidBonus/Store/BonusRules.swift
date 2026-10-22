@@ -36,4 +36,12 @@ enum BonusRules {
             .filter { streakCount % $0.days == 0 }
             .map { StreakAward(days: $0.days, points: $0.points) }
     }
+
+    /// 同一个周期只能有一条规则：连续满 N 天会同时发两份奖。
+    /// `excluding` 是正在编辑的那条规则，改它自己不算重复。
+    @MainActor
+    static func hasRule(days: Int, excluding id: UUID?, ctx: ModelContext) -> Bool {
+        let rules = (try? ctx.fetch(FetchDescriptor<BonusRule>())) ?? []
+        return rules.contains { $0.days == days && $0.id != id }
+    }
 }

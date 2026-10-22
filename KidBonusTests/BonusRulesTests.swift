@@ -75,11 +75,23 @@ final class BonusRulesTests: XCTestCase {
         XCTAssertEqual(draft.points, 0)
     }
 
-    func test天数为空或非正数报错() {
-        for text in ["", "0", "-3", "abc"] {
+    func test天数为空报错() {
+        XCTAssertThrowsError(try BonusRuleValidator.validate(daysText: "", pointsText: "10")) {
+            XCTAssertEqual($0 as? BonusRuleValidationError, .emptyDays)
+        }
+    }
+
+    func test天数为非正数报错() {
+        for text in ["0", "-3", "abc"] {
             XCTAssertThrowsError(try BonusRuleValidator.validate(daysText: text, pointsText: "10")) {
                 XCTAssertEqual($0 as? BonusRuleValidationError, .invalidDays)
             }
+        }
+    }
+
+    func test奖励为空报错() {
+        XCTAssertThrowsError(try BonusRuleValidator.validate(daysText: "7", pointsText: "")) {
+            XCTAssertEqual($0 as? BonusRuleValidationError, .emptyPoints)
         }
     }
 
@@ -87,5 +99,16 @@ final class BonusRulesTests: XCTestCase {
         XCTAssertThrowsError(try BonusRuleValidator.validate(daysText: "7", pointsText: "-1")) {
             XCTAssertEqual($0 as? BonusRuleValidationError, .invalidPoints)
         }
+    }
+
+    // MARK: 重复周期
+
+    func test同一周期不能有两条规则() {
+        let rule = BonusRule(days: 7, points: 20)
+        ctx.insert(rule)
+        XCTAssertTrue(BonusRules.hasRule(days: 7, excluding: nil, ctx: ctx))
+        XCTAssertFalse(BonusRules.hasRule(days: 7, excluding: rule.id, ctx: ctx),
+                       "编辑自己不算重复")
+        XCTAssertFalse(BonusRules.hasRule(days: 14, excluding: nil, ctx: ctx))
     }
 }
