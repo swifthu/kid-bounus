@@ -26,7 +26,7 @@ struct ShopManageView: View {
                     .background(Color.kami.surfaceWarm)
                     .clipShape(RoundedRectangle(cornerRadius: Radius.md))
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.kamiPress)
                 .padding(.horizontal, Spacing.s4)
 
                 if products.isEmpty {
@@ -93,7 +93,7 @@ struct ShopManageView: View {
                     }
                 }
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.kamiPress)
             Spacer()
             Text("\(p.cost) 分")
                 .font(.kami(.body, size: 14))
@@ -101,11 +101,11 @@ struct ShopManageView: View {
             Button { editor = .edit(p) } label: {
                 Image(systemName: "pencil").foregroundStyle(Color.kami.muted)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.kamiPress)
             Button(role: .destructive) { remove(p) } label: {
                 Image(systemName: "trash").foregroundStyle(Color.kami.danger)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.kamiPress)
         }
         .padding(Spacing.s3)
         .background(Color.kami.surface)

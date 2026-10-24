@@ -71,7 +71,7 @@ struct AddItemSheet: View {
                                     .stroke(Color.kami.accent, lineWidth: s.tag == selected ? 1 : 0)
                             )
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.kamiPress)
                 }
             }
             .padding(Spacing.s1)

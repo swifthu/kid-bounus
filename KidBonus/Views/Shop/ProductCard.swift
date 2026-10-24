@@ -37,6 +37,6 @@ struct ProductCard: View {
             )
             .opacity(affordable ? 1 : 0.6)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.kamiPress)
     }
 }

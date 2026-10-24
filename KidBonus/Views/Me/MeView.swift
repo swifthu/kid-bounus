@@ -11,6 +11,9 @@ struct MeView: View {
     @State private var itemSheet: ItemSheet?
     @State private var ruleSheet: RuleSheet?
     @State private var showReset = false
+    /// 加分项 / 扣分项的折叠状态。项目多了以后一屏塞不下，默认展开。
+    @State private var addsExpanded = true
+    @State private var dedsExpanded = true
 
     /// 新增和编辑共用一个弹层：编辑时传已有项目，界面预填内容。
     private enum ItemSheet: Identifiable {
@@ -55,6 +58,9 @@ struct MeView: View {
                         Text("改名字 · 改积分项 · 重置数据。")
                             .font(.kami(.body, size: 14))
                             .foregroundStyle(Color.kami.muted)
+                        Text("积分项：长按编辑，左滑删除。")
+                            .font(.kami(.body, size: 12))
+                            .foregroundStyle(Color.kami.meta)
                     }
                     .padding(.horizontal, Spacing.s4)
 
@@ -83,7 +89,7 @@ struct MeView: View {
                         }
                     }
 
-                    section("02", "加分项") {
+                    CollapsibleSection(num: "02", label: "加分项", expanded: $addsExpanded) {
                         ForEach(adds) { it in editRow(it) }
                         Button { itemSheet = .add(.add) } label: {
                             HStack {
@@ -94,10 +100,10 @@ struct MeView: View {
                             .background(Color.kami.surfaceWarm)
                             .clipShape(RoundedRectangle(cornerRadius: Radius.md))
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(.kamiPress)
                     }
 
-                    section("03", "扣分项") {
+                    CollapsibleSection(num: "03", label: "扣分项", expanded: $dedsExpanded) {
                         ForEach(deds) { it in editRow(it) }
                         Button { itemSheet = .add(.deduct) } label: {
                             HStack {
@@ -108,7 +114,7 @@ struct MeView: View {
                             .background(Color.kami.surfaceWarm)
                             .clipShape(RoundedRectangle(cornerRadius: Radius.md))
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(.kamiPress)
                     }
 
                     section("04", "bonus 规则") {
@@ -132,7 +138,7 @@ struct MeView: View {
                             .background(Color.kami.surfaceWarm)
                             .clipShape(RoundedRectangle(cornerRadius: Radius.md))
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(.kamiPress)
                     }
 
                     section("05", "数据") {
@@ -145,7 +151,7 @@ struct MeView: View {
                                 .foregroundStyle(Color.kami.danger)
                                 .clipShape(RoundedRectangle(cornerRadius: Radius.md))
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(.kamiPress)
                     }
 
                     Text("数据保存在本地设备。")
@@ -218,7 +224,7 @@ struct MeView: View {
                         .foregroundStyle(r.enabled ? Color.kami.warn : Color.kami.meta)
                 }
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.kamiPress)
             .accessibilityIdentifier("rule.\(r.days)")
             Spacer()
             Toggle("启用这条规则", isOn: Binding(
@@ -230,7 +236,7 @@ struct MeView: View {
             Button { ruleSheet = .edit(r) } label: {
                 Image(systemName: "pencil").foregroundStyle(Color.kami.muted)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.kamiPress)
             Button(role: .destructive) {
                 ctx.delete(r)
                 try? ctx.save()
@@ -239,7 +245,7 @@ struct MeView: View {
             } label: {
                 Image(systemName: "trash").foregroundStyle(Color.kami.danger)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.kamiPress)
         }
         .padding(.horizontal, Spacing.s3)
         .padding(.vertical, Spacing.s2)
@@ -273,35 +279,89 @@ struct MeView: View {
         toast.show(.success, title: "已删除「\(it.title)」")
     }
 
+    /// 一条积分项：长按编辑，左滑露出删除。轻点不做任何事，避免和左滑的手势打架。
+    /// 尺寸和「加减」页的 ItemRow 保持一致，两边看着是同一种东西。
     private func editRow(_ it: PointItem) -> some View {
-        HStack(spacing: Spacing.s2) {
-            Button { edit(it) } label: {
-                Text(it.title).font(.kami(.body, size: 13))
+        SwipeToDelete {
+            removeItem(it)
+        } content: {
+            HStack(spacing: Spacing.s3) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: Radius.sm)
+                        .fill(it.delta > 0 ? Color.kami.tagBgSoft : Color.kami.dangerBg)
+                        .frame(width: 36, height: 36)
+                    Image(systemName: it.iconName ?? "circle")
+                        .foregroundStyle(it.delta > 0 ? Color.kami.accent : Color.kami.danger)
+                }
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(it.title).font(.kami(.body, size: 14))
+                    Text(ownerName(it.kidID))
+                        .font(.kami(.body, size: 11))
+                        .foregroundStyle(Color.kami.meta)
+                }
+                Spacer()
+                Text("\(it.delta > 0 ? "+" : "")\(it.delta)")
+                    .font(.kami(.body, size: 18))
+                    .foregroundStyle(it.delta > 0 ? Color.kami.success : Color.kami.danger)
             }
-            .buttonStyle(.plain)
-            Spacer()
-            Tag(text: ownerName(it.kidID), kind: .faint)
-                .accessibilityIdentifier("item.owner.\(it.title)")
-            Text("\(it.delta > 0 ? "+" : "")\(it.delta)")
-                .font(.kami(.body, size: 14))
-                .foregroundStyle(it.delta > 0 ? Color.kami.success : Color.kami.danger)
-            Button { edit(it) } label: {
-                Image(systemName: "pencil").foregroundStyle(Color.kami.muted)
-            }
-            .buttonStyle(.plain)
-            Button(role: .destructive) {
-                removeItem(it)
-            } label: {
-                Image(systemName: "trash").foregroundStyle(Color.kami.danger)
-            }
-            .buttonStyle(.plain)
+            .padding(.horizontal, Spacing.s4)
+            .padding(.vertical, Spacing.s3)
+            .background(Color.kami.surface)
+            .clipShape(RoundedRectangle(cornerRadius: Radius.md))
+            .overlay(
+                RoundedRectangle(cornerRadius: Radius.md).stroke(Color.kami.border, lineWidth: 1)
+            )
+            .frame(minHeight: 56)
+            .contentShape(RoundedRectangle(cornerRadius: Radius.md))
+            .onLongPressGesture { edit(it) }
+            // 合并成单个无障碍元素：不然 identifier 会落到图标、标题、分值每一个子元素上，
+            // VoiceOver 会读四遍，测试也会匹配到四个元素。
+            .accessibilityElement(children: .ignore)
+            .accessibilityIdentifier("item.\(it.title)")
+            .accessibilityLabel("\(it.title)，\(ownerName(it.kidID))，"
+                                + "\(it.delta > 0 ? "加" : "扣") \(abs(it.delta)) 分")
+            .accessibilityAddTraits(.isButton)
+            // VoiceOver 没有长按和左滑，双击就是编辑
+            .accessibilityHint("双击编辑")
+            .accessibilityAction { edit(it) }
         }
-        .padding(.horizontal, Spacing.s3)
-        .padding(.vertical, Spacing.s2)
-        .background(Color.kami.surface)
-        .clipShape(RoundedRectangle(cornerRadius: Radius.md))
-        .overlay(
-            RoundedRectangle(cornerRadius: Radius.md).stroke(Color.kami.border, lineWidth: 1)
-        )
+    }
+}
+
+/// 可折叠的区块：标题整行可点，收起时下面的内容不占地方。
+private struct CollapsibleSection<Content: View>: View {
+    let num: String
+    let label: String
+    @Binding var expanded: Bool
+    @ViewBuilder let content: Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.s2) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) { expanded.toggle() }
+            } label: {
+                HStack {
+                    SectionHeader(num: num, label: label)
+                    Spacer()
+                    Image(systemName: expanded ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 12))
+                        .foregroundStyle(Color.kami.meta)
+                }
+                // Spacer 是不画东西的透明区域，SwiftUI 默认只响应「画出来的部分」。
+                // 不加这句，点标题中间会穿透到下面的积分项，误开编辑弹层。
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.kamiPress)
+            .accessibilityIdentifier("section.toggle.\(num)")
+            .accessibilityLabel("\(label)列表")
+            .accessibilityHint(expanded ? "双击折叠" : "双击展开")
+
+            if expanded {
+                VStack(spacing: Spacing.s2) {
+                    content
+                }
+            }
+        }
+        .padding(.horizontal, Spacing.s4)
     }
 }

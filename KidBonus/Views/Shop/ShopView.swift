@@ -34,7 +34,7 @@ struct ShopView: View {
                                 .font(.kami(.body, size: 13))
                                 .foregroundStyle(Color.kami.accent)
                             }
-                            .buttonStyle(.plain)
+                            .buttonStyle(.kamiPress)
                             .accessibilityIdentifier("shop.manage")
                         }
                     }
@@ -120,7 +120,7 @@ struct ShopView: View {
                         .stroke(selected ? Color.kami.tagBgSoft : Color.kami.border, lineWidth: 1)
                 )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.kamiPress)
     }
 
     private func redemptionRow(_ r: Redemption) -> some View {

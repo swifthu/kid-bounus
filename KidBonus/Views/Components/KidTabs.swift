@@ -38,6 +38,6 @@ struct KidTabs: View {
                     .stroke(Color.kami.accent, lineWidth: isSelected ? 1 : 0)
             )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.kamiPress)
     }
 }

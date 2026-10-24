@@ -34,7 +34,7 @@ struct KamiButton: View {
                     .stroke(borderColor, lineWidth: 1)
             )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.kamiPress)
     }
 
     private var background: Color {

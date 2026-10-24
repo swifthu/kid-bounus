@@ -55,7 +55,7 @@ struct IconPicker: View {
                                 lineWidth: 1)
                 )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.kamiPress)
         .accessibilityIdentifier("icon.\(name)")
     }
 }

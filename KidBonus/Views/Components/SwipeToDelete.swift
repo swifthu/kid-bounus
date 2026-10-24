@@ -17,6 +17,10 @@ struct SwipeToDelete<Content: View>: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(Color.kami.bg)
                 .offset(x: x)
+                // 内容行本身可能是按钮（比如「我的」页的积分项）。展开后它仍然占着
+                // 整行的可点区域，会把右边露出来的删除按钮挡住，点不动。
+                // 展开时关掉它的点击，删除按钮下面再铺一层「点一下收起」。
+                .allowsHitTesting(!isOpen)
                 // simultaneousGesture：与外层 ScrollView 共存，竖向滑动仍能滚动
                 .simultaneousGesture(
                     DragGesture(minimumDistance: 8)
@@ -34,6 +38,16 @@ struct SwipeToDelete<Content: View>: View {
 
             // 只在展开时存在：收起时若按钮仍在，内容行会盖住它导致点不动
             if isOpen {
+                // 铺在内容之上、删除按钮之下：点左边收起，点右边仍然是删除
+                Color.clear
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        withAnimation(.spring(response: 0.25, dampingFraction: 0.9)) {
+                            isOpen = false
+                            x = 0
+                        }
+                    }
+
                 Button {
                     withAnimation { isOpen = false; x = 0 }
                     onDelete()
@@ -45,7 +59,7 @@ struct SwipeToDelete<Content: View>: View {
                         .frame(maxHeight: .infinity)
                         .background(Color.kami.dangerBg)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.kamiPress)
             }
         }
     }

@@ -30,15 +30,22 @@ final class ToastCenter {
     func show(_ kind: Toast.Kind, title: String, body: String? = nil,
               action: Action? = nil, duration: TimeInterval? = nil) {
         let toast = Toast(kind: kind, title: title, body: body, action: action)
-        current = toast
+        // 显式加动画：current 是在这里改的，不包 withAnimation 的话
+        // ToastBanner 上的 transition 不会播，toast 是「啪」一下出现的。
+        withAnimation(Self.appearAnimation) { current = toast }
         let dur = duration ?? (action == nil ? ToastCenter.defaultDuration : ToastCenter.actionDuration)
         Task { @MainActor in
             try? await Task.sleep(nanoseconds: UInt64(dur * 1_000_000_000))
             // 只清理自己触发的那一条。写成 current?.id == current?.id 是恒真判断，
             // 会让先发 toast 的定时器把后来者提前清掉（如 streak 奖励提示被截断）。
-            if current?.id == toast.id { current = nil }
+            if current?.id == toast.id {
+                withAnimation(Self.appearAnimation) { current = nil }
+            }
         }
     }
+
+    /// 从上方滑入并淡入，收回时反向播放
+    static let appearAnimation = Animation.spring(response: 0.34, dampingFraction: 0.86)
 }
 
 struct ToastBanner: View {

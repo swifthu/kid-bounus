@@ -42,7 +42,7 @@ struct ManualRecordSheet: View {
                                 .foregroundStyle(rf.delta > 0 ? Color.kami.success : Color.kami.danger)
                                 .clipShape(Capsule())
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(.kamiPress)
                     }
                 }
             }
@@ -61,7 +61,7 @@ struct ManualRecordSheet: View {
                         .background(Color.kami.surfaceWarm)
                         .clipShape(RoundedRectangle(cornerRadius: Radius.md))
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.kamiPress)
                 TextField("分值", text: $deltaText)
                     .keyboardType(.numberPad)
                     .multilineTextAlignment(.center)

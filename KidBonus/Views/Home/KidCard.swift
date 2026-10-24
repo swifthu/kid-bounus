@@ -35,7 +35,7 @@ struct KidCard: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.kamiPress)
 
             Button(action: onSetPoints) {
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
@@ -47,7 +47,7 @@ struct KidCard: View {
                         .foregroundStyle(Color.kami.meta)
                 }
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.kamiPress)
             .accessibilityIdentifier("kid.points")
 
             Button(action: onTap) {
@@ -67,7 +67,7 @@ struct KidCard: View {
                         .offset(y: -Spacing.s3)
                 }
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.kamiPress)
 
             if !recentItems.isEmpty {
                 recentRow
@@ -119,7 +119,7 @@ struct KidCard: View {
                             .background(Color.kami.surfaceWarm)
                             .clipShape(Capsule())
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(.kamiPress)
                         .accessibilityIdentifier("recent.\(item.title)")
                     }
                 }

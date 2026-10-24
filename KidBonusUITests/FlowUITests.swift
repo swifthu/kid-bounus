@@ -215,7 +215,7 @@ final class FlowUITests: XCTestCase {
 
         app.buttons["保存"].tap()
 
-        XCTAssertTrue(app.buttons["bonusitem"].waitForExistence(timeout: 5),
+        XCTAssertTrue(app.buttons["item.bonusitem"].waitForExistence(timeout: 5),
                       "新增的加分项应出现在「我的」列表")
     }
 
@@ -230,15 +230,19 @@ final class FlowUITests: XCTestCase {
                       "空标题应给出校验提示")
     }
 
-    /// 「我的」页点积分项：打开新增同款弹层，预填原有内容，改完保存。
+    /// 「我的」页长按积分项：打开新增同款弹层，预填原有内容，改完保存。
     func test我的页积分项可编辑() {
         goToTab("我的")
-        // 列表里点「完成作业」这一项（标题本身可点，进了编辑弹层）
-        let title = app.buttons["完成作业"]
+        let title = app.buttons["item.完成作业"]
         XCTAssertTrue(title.waitForExistence(timeout: 5))
-        title.tap()
 
-        XCTAssertTrue(app.buttons["保存"].waitForExistence(timeout: 5), "应打开编辑弹层")
+        // 轻点不做任何事，左滑才是删除：编辑靠长按
+        title.tap()
+        XCTAssertFalse(app.buttons["保存"].waitForExistence(timeout: 2),
+                       "轻点不应打开编辑弹层")
+        title.press(forDuration: 1.0)
+
+        XCTAssertTrue(app.buttons["保存"].waitForExistence(timeout: 5), "长按应打开编辑弹层")
         let sheetTitle = app.staticTexts.containing(
             NSPredicate(format: "label CONTAINS %@", "编辑加分项")
         ).firstMatch
@@ -254,8 +258,51 @@ final class FlowUITests: XCTestCase {
         retype(fields.element(boundBy: 0), "改名作业")
         app.buttons["保存"].tap()
 
-        XCTAssertTrue(app.buttons["改名作业"].waitForExistence(timeout: 5),
+        XCTAssertTrue(app.buttons["item.改名作业"].waitForExistence(timeout: 5),
                       "列表应显示新名字")
+    }
+
+    /// 加分项 / 扣分项列表可折叠，折叠后条目消失，再点一次回来。
+    func test我的页积分项列表可折叠() {
+        goToTab("我的")
+        XCTAssertTrue(app.buttons["item.完成作业"].waitForExistence(timeout: 5),
+                      "默认应展开加分项列表")
+
+        let toggle = app.buttons["section.toggle.02"]
+        XCTAssertTrue(toggle.waitForExistence(timeout: 5), "加分项标题应可点")
+        toggle.tap()
+        XCTAssertFalse(app.buttons["item.完成作业"].waitForExistence(timeout: 2),
+                       "折叠后条目应消失")
+
+        toggle.tap()
+        XCTAssertTrue(app.buttons["item.完成作业"].waitForExistence(timeout: 5),
+                      "再点一次应重新展开")
+
+        // 扣分项是另一个折叠开关，互不影响
+        let dedToggle = app.buttons["section.toggle.03"]
+        XCTAssertTrue(dedToggle.waitForExistence(timeout: 5))
+        dedToggle.tap()
+        XCTAssertFalse(app.buttons["item.赖床迟到"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.buttons["item.完成作业"].exists, "折叠扣分项不该动加分项")
+    }
+
+    /// 积分项左滑露出删除，删掉后列表里不再有它。
+    func test我的页积分项左滑删除() {
+        goToTab("我的")
+        // 列表有一屏放不下的条目，只挑当前看得见的那一行来滑
+        let row = app.buttons.matching(
+            NSPredicate(format: "identifier BEGINSWITH %@", "item.")
+        ).allElementsBoundByIndex.first { $0.isHittable }
+        XCTAssertNotNil(row, "「我的」页应有可见的积分项")
+        guard let row else { return }
+        let name = row.identifier
+        swipeLeft(on: row)
+
+        let del = app.buttons["删除"]
+        XCTAssertTrue(del.waitForExistence(timeout: 5), "左滑应露出删除按钮")
+        del.tap()
+
+        XCTAssertFalse(app.buttons[name].waitForExistence(timeout: 2), "删除后该积分项应消失")
     }
 
     /// 商城管理页点商品名：打开新增同款弹层，预填原有内容。
@@ -389,9 +436,10 @@ final class FlowUITests: XCTestCase {
         fields.element(boundBy: 1).typeText("7")
         app.buttons["保存"].tap()
 
-        XCTAssertTrue(app.buttons["kidonly"].waitForExistence(timeout: 5))
-        XCTAssertEqual(app.staticTexts["item.owner.kidonly"].label, "小红",
-                       "选了小红的项应归属于小红")
+        let kidonly = app.buttons["item.kidonly"]
+        XCTAssertTrue(kidonly.waitForExistence(timeout: 5))
+        XCTAssertTrue(kidonly.label.contains("小红"),
+                      "选了小红的项应归属于小红，实际是 \(kidonly.label)")
 
         // 加减页显式切到小明再断言：默认选中哪个孩子会受上一次运行残留的
         // currentKidID 影响，这里要验的是过滤本身。

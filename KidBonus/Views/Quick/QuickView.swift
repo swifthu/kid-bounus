@@ -77,7 +77,7 @@ struct QuickView: View {
                                 .stroke(Color.kami.border, lineWidth: 1)
                         )
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.kamiPress)
                     .padding(.horizontal, Spacing.s4)
                 }
                 .padding(.vertical, Spacing.s4)

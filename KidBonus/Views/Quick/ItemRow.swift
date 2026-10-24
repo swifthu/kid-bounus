@@ -32,6 +32,6 @@ struct ItemRow: View {
             )
             .frame(minHeight: 56)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.kamiPress)
     }
 }

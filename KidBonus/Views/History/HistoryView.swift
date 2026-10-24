@@ -92,7 +92,7 @@ struct HistoryView: View {
                         .stroke(Color.kami.border, lineWidth: 1)
                 )
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.kamiPress)
 
             if showCalendar {
                 VStack(spacing: Spacing.s3) {
@@ -160,7 +160,7 @@ struct HistoryView: View {
                         .stroke(dateRange == r ? Color.kami.accent : Color.kami.border, lineWidth: 1)
                 )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.kamiPress)
     }
 
     private func chip(_ text: String, id: String) -> some View {        Button { filter = id } label: {
@@ -175,7 +175,7 @@ struct HistoryView: View {
                         .stroke(filter == id ? Color.kami.accent : Color.kami.border, lineWidth: 1)
                 )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.kamiPress)
     }
 
     private func row(for h: HistoryEntry) -> some View {
